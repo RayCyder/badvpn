@@ -239,7 +239,13 @@ static err_t client_sent_func (void *arg, struct tcp_pcb *tpcb, u16_t len);
 static void udpgw_client_handler_received (void *unused, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len);
 
 #ifdef BADVPN_LIBTSOCKS
+//#pragma message ("iOS")
+#if TARGET_OS_IOS
+int tun2socks_main (int argc, char **argv, int fd, int mtu)
+#else
 int tun2socks_main (int argc, char **argv)
+#endif
+
 #else
 int main (int argc, char **argv)
 #endif
@@ -324,18 +330,34 @@ int main (int argc, char **argv)
     
     // set not quitting
     quitting = 0;
+
+    // init TUN device
+#if TARGET_OS_IOS
+    struct BTap_init_data init_data;
+    init_data.dev_type = BTAP_DEV_TUN ;
+    init_data.init_type = BTAP_INIT_FD;
+    init_data.init.fd.fd = fd;
+    init_data.init.fd.mtu = mtu;
     
+    if (!BTap_Init2(&device, &ss, init_data, device_error_handler, NULL)) {
+    // init TUN device
+//    if (!BTap_Init(&device, &ss, options.fd, options.mtu, device_error_handler, NULL, 1)) {
+        BLog(BLOG_ERROR, "BTap_Init failed");
+        goto fail2;
+    }
+
+#else
     // setup signal handler
     if (!BSignal_Init(&ss, signal_handler, NULL)) {
         BLog(BLOG_ERROR, "BSignal_Init failed");
         goto fail2;
     }
     
-    // init TUN device
     if (!BTap_Init(&device, &ss, options.tundev, device_error_handler, NULL, 1)) {
         BLog(BLOG_ERROR, "BTap_Init failed");
         goto fail3;
     }
+#endif
     
     // NOTE: the order of the following is important:
     // first device writing must evaluate,
@@ -457,6 +479,11 @@ fail0:
     return 1;
 }
 
+
+void stop_tun2socks(void) {
+    terminate();
+}
+
 void terminate (void)
 {
     ASSERT(!quitting)
@@ -469,6 +496,10 @@ void terminate (void)
     // exit event loop
     BReactor_Quit(&ss, 1);
 }
+
+
+
+
 
 void print_help (const char *name)
 {

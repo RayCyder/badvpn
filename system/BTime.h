@@ -69,9 +69,8 @@ struct _BTime_global {
     #endif
 };
 
-#ifdef __MACH__
+#ifndef CLOCK_MONOTONIC
 #define CLOCK_MONOTONIC 1
-int clock_gettime(int clk_id, struct timespec* t);
 #endif
 
 extern struct _BTime_global btime_global;

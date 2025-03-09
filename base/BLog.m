@@ -1,5 +1,8 @@
-/*
- * Copyright (C) Ambroz Bizjak <ambrop7@gmail.com>
+/**
+ * @file BLog.c
+ * @author Ambroz Bizjak <ambrop7@gmail.com>
+ * 
+ * @section LICENSE
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,43 +27,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// name of the program
-#define PROGRAM_NAME "tun2socks"
+#include <stdio.h>
+#include <stddef.h>
+#include <Foundation/Foundation.h>
 
-// size of temporary buffer for passing data from the SOCKS server to TCP for sending
-#define CLIENT_SOCKS_RECV_BUF_SIZE 8192
+#include "BLog.h"
 
-// maximum number of udpgw connections
-#define DEFAULT_UDPGW_MAX_CONNECTIONS 256
+#ifndef BADVPN_PLUGIN
 
-// udpgw per-connection send buffer size, in number of packets
-#define DEFAULT_UDPGW_CONNECTION_BUFFER_SIZE 8
+struct _BLog_channel blog_channel_list[] = {
+#include "generated/blog_channels_list.h"
+};
 
-// udpgw reconnect time after connection fails
-#define UDPGW_RECONNECT_TIME 5000
+struct _BLog_global blog_global = {
+    #ifndef NDEBUG
+    0
+    #endif
+};
 
-// udpgw keepalive sending interval
-#define UDPGW_KEEPALIVE_TIME 10000
-
-// option to override the destination addresses to give the SOCKS server
-//#define OVERRIDE_DEST_ADDR "10.111.0.2:2000"
-
-// debug
-#define TCP_DATA_LOG_ENABLE 1
-// option to override the destination addresses to give the SOCKS server
-//#define OVERRIDE_DEST_ADDR "10.111.0.2:2000"
-
-// Max number of buffered outgoing UDP packets for SOCKS5-UDP. It should be large
-// enough to prevent packet loss while the SOCKS UDP association is being set up. A slow
-// or far-away SOCKS server could require 300 ms to connect, and a chatty client (e.g.
-// STUN) could send a packet every 20 ms, so a default limit of 16 seems reasonable.
-#define SOCKS_UDP_SEND_BUFFER_PACKETS 16
-#if defined(__APPLE__)
-    #include <TargetConditionals.h>
-#else
-    #define TARGET_OS_IOS 0
 #endif
-#if TARGET_OS_IOS
-extern int tun2socks_main (int argc, char **argv, int fd, int mtu);
-extern void stop_tun2socks(void);
-#endif
+
+// keep in sync with level numbers in BLog.h!
+static char *level_names[] = { NULL, "ERROR", "WARNING", "NOTICE", "INFO", "DEBUG" };
+
+static void stdout_log (int channel, int level, const char *msg)
+{
+    NSLog(@"%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
+}
+
+static void stderr_log (int channel, int level, const char *msg)
+{
+    NSLog(@"%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
+}
+
+static void stdout_stderr_free (void)
+{
+}
+
+void BLog_InitStdout (void)
+{
+    BLog_Init(stdout_log, stdout_stderr_free);
+}
+
+void BLog_InitStderr (void)
+{
+    BLog_Init(stderr_log, stdout_stderr_free);
+}

@@ -46,16 +46,16 @@
     #include <sys/stat.h>
     #include <sys/socket.h>
     #include <net/if.h>
-    #include <net/if_arp.h>
+//    #include <net/if_arp.h>
     #ifdef BADVPN_LINUX
         #include <linux/if_tun.h>
     #endif
     #ifdef BADVPN_FREEBSD
         #ifdef __APPLE__
             #include <ctype.h>
-            #include <net/if_utun.h>
-            #include <sys/sys_domain.h>
-            #include <sys/kern_control.h>
+//            #include <net/if_utun.h>
+//            #include <sys/sys_domain.h>
+//            #include <sys/kern_control.h>
             #include <netinet/ip.h>
             #include <sys/uio.h>
         #else
@@ -250,7 +250,20 @@ void output_handler_recv (BTap *o, uint8_t *data)
     
 #endif
 }
-
+#if TARGET_OS_IOS
+int BTap_Init (BTap *o,BReactor *reactor, int fd, int mtu, BTap_handler_error handler_error, void *handler_error_user, int tun)
+{
+    ASSERT(tun == 0 || tun == 1)
+    
+    struct BTap_init_data init_data;
+    init_data.dev_type = tun ? BTAP_DEV_TUN : BTAP_DEV_TAP;
+    init_data.init_type = BTAP_INIT_FD;
+    init_data.init.fd.fd = fd;
+    init_data.init.fd.mtu = mtu;
+    
+    return BTap_Init2(o, reactor, init_data, handler_error, handler_error_user);
+}
+#else
 int BTap_Init (BTap *o, BReactor *reactor, char *devname, BTap_handler_error handler_error, void *handler_error_user, int tun)
 {
     ASSERT(tun == 0 || tun == 1)
@@ -262,6 +275,7 @@ int BTap_Init (BTap *o, BReactor *reactor, char *devname, BTap_handler_error han
     
     return BTap_Init2(o, reactor, init_data, handler_error, handler_error_user);
 }
+#endif
 
 int BTap_Init2 (BTap *o, BReactor *reactor, struct BTap_init_data init_data, BTap_handler_error handler_error, void *handler_error_user)
 {
@@ -437,96 +451,96 @@ fail0:
 
             #ifdef __APPLE__
 
-            if (init_data.dev_type != BTAP_DEV_TUN) {
-                BLog(BLOG_ERROR, "TAP not supported on Darwin");
-                goto fail0;
-            }
+//            if (init_data.dev_type != BTAP_DEV_TUN) {
+//                BLog(BLOG_ERROR, "TAP not supported on Darwin");
+//                goto fail0;
+//            }
+//
+//            if (!init_data.init.string) {
+//                BLog(BLOG_ERROR, "no device specified");
+//                goto fail0;
+//            }
+//
+//            int utunnum = -1;
+//            char *devstr_s = init_data.init.string;
+//            char *devstr_t = NULL;
+//            while (*devstr_s && !isdigit((int) *devstr_s)) {
+//                devstr_s++;
+//            }
+//            utunnum = (int) strtol(devstr_s, &devstr_t, 10);
+//            if (devstr_s == devstr_t) {
+//                utunnum = -1;
+//            }
+//            if (utunnum == -1) {
+//                BLog(BLOG_ERROR, "error device name");
+//                goto fail0;
+//            }
 
-            if (!init_data.init.string) {
-                BLog(BLOG_ERROR, "no device specified");
-                goto fail0;
-            }
-
-            int utunnum = -1;
-            char *devstr_s = init_data.init.string;
-            char *devstr_t = NULL;
-            while (*devstr_s && !isdigit((int) *devstr_s)) {
-                devstr_s++;
-            }
-            utunnum = (int) strtol(devstr_s, &devstr_t, 10);
-            if (devstr_s == devstr_t) {
-                utunnum = -1;
-            }
-            if (utunnum == -1) {
-                BLog(BLOG_ERROR, "error device name");
-                goto fail0;
-            }
-
-            struct ctl_info ctlInfo;
-            struct ifreq ifr;
-            memset(&ctlInfo, 0, sizeof(ctlInfo));
-            if (strlcpy(ctlInfo.ctl_name, UTUN_CONTROL_NAME, sizeof(ctlInfo.ctl_name)) >=
-                sizeof(ctlInfo.ctl_name)) {
-                BLog(BLOG_ERROR, "UTUN_CONTROL_NAME too long");
-                goto fail0;
-            }
-
-            o->fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
-            if (o->fd < 0) {
-                BLog(BLOG_ERROR, "error for socket(SYSPROTO_CONTROL)");
-                goto fail0;
-            }
-
-            if (ioctl(o->fd, CTLIOCGINFO, &ctlInfo) == -1) {
-                BLog(BLOG_ERROR, "ioctl(CTLIOCGINFO)");
-                goto fail1;
-            }
-
-            struct sockaddr_ctl sc;
-            sc.sc_id = ctlInfo.ctl_id;
-            sc.sc_len = sizeof(sc);
-            sc.sc_family = AF_SYSTEM;
-            sc.ss_sysaddr = AF_SYS_CONTROL;
-            sc.sc_unit = utunnum + 1;
-            if (connect(o->fd, (struct sockaddr *)&sc, sizeof(sc)) == -1) {
-                BLog(BLOG_ERROR, "error for connect(AF_SYS_CONTROL)");
-                goto fail1;
-            }
-
-            snprintf(devname_real, sizeof(devname_real), "utun%d", utunnum);
-
+//            struct ctl_info ctlInfo;
+//            struct ifreq ifr;
+//            memset(&ctlInfo, 0, sizeof(ctlInfo));
+//            if (strlcpy(ctlInfo.ctl_name, UTUN_CONTROL_NAME, sizeof(ctlInfo.ctl_name)) >=
+//                sizeof(ctlInfo.ctl_name)) {
+//                BLog(BLOG_ERROR, "UTUN_CONTROL_NAME too long");
+//                goto fail0;
+//            }
+//
+//            o->fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
+//            if (o->fd < 0) {
+//                BLog(BLOG_ERROR, "error for socket(SYSPROTO_CONTROL)");
+//                goto fail0;
+//            }
+//
+//            if (ioctl(o->fd, CTLIOCGINFO, &ctlInfo) == -1) {
+//                BLog(BLOG_ERROR, "ioctl(CTLIOCGINFO)");
+//                goto fail1;
+//            }
+//
+//            struct sockaddr_ctl sc;
+//            sc.sc_id = ctlInfo.ctl_id;
+//            sc.sc_len = sizeof(sc);
+//            sc.sc_family = AF_SYSTEM;
+//            sc.ss_sysaddr = AF_SYS_CONTROL;
+//            sc.sc_unit = utunnum + 1;
+//            if (connect(o->fd, (struct sockaddr *)&sc, sizeof(sc)) == -1) {
+//                BLog(BLOG_ERROR, "error for connect(AF_SYS_CONTROL)");
+//                goto fail1;
+//            }
+//
+//            snprintf(devname_real, sizeof(devname_real), "utun%d", utunnum);
+//
             #else
-            
-            if (init_data.dev_type == BTAP_DEV_TUN) {
-                BLog(BLOG_ERROR, "TUN not supported on FreeBSD");
-                goto fail0;
-            }
-            
-            if (!init_data.init.string) {
-                BLog(BLOG_ERROR, "no device specified");
-                goto fail0;
-            }
-            
-            // open device
-            
-            char devnode[10 + IFNAMSIZ];
-            snprintf(devnode, sizeof(devnode), "/dev/%s", init_data.init.string);
-            
-            if ((o->fd = open(devnode, O_RDWR)) < 0) {
-                BLog(BLOG_ERROR, "error opening device");
-                goto fail0;
-            }
-            
-            // get name
-            
-            struct ifreq ifr;
-            memset(&ifr, 0, sizeof(ifr));
-            if (ioctl(o->fd, TAPGIFNAME, (void *)&ifr) < 0) {
-                BLog(BLOG_ERROR, "error configuring device");
-                goto fail1;
-            }
-            
-            strcpy(devname_real, ifr.ifr_name);
+//            
+//            if (init_data.dev_type == BTAP_DEV_TUN) {
+//                BLog(BLOG_ERROR, "TUN not supported on FreeBSD");
+//                goto fail0;
+//            }
+//            
+//            if (!init_data.init.string) {
+//                BLog(BLOG_ERROR, "no device specified");
+//                goto fail0;
+//            }
+//            
+//            // open device
+//            
+//            char devnode[10 + IFNAMSIZ];
+//            snprintf(devnode, sizeof(devnode), "/dev/%s", init_data.init.string);
+//            
+//            if ((o->fd = open(devnode, O_RDWR)) < 0) {
+//                BLog(BLOG_ERROR, "error opening device");
+//                goto fail0;
+//            }
+//            
+//            // get name
+//            
+//            struct ifreq ifr;
+//            memset(&ifr, 0, sizeof(ifr));
+//            if (ioctl(o->fd, TAPGIFNAME, (void *)&ifr) < 0) {
+//                BLog(BLOG_ERROR, "error configuring device");
+//                goto fail1;
+//            }
+//            
+//            strcpy(devname_real, ifr.ifr_name);
 
             #endif
             
@@ -535,28 +549,28 @@ fail0:
             // get MTU
             
             // open dummy socket for ioctls
-            int sock = socket(AF_INET, SOCK_DGRAM, 0);
-            if (sock < 0) {
-                BLog(BLOG_ERROR, "socket failed");
-                goto fail1;
-            }
-            
-            memset(&ifr, 0, sizeof(ifr));
-            strcpy(ifr.ifr_name, devname_real);
-            
-            if (ioctl(sock, SIOCGIFMTU, (void *)&ifr) < 0) {
-                BLog(BLOG_ERROR, "error getting MTU");
-                close(sock);
-                goto fail1;
-            }
-            
-            if (init_data.dev_type == BTAP_DEV_TUN) {
-                o->frame_mtu = ifr.ifr_mtu;
-            } else {
-                o->frame_mtu = ifr.ifr_mtu + BTAP_ETHERNET_HEADER_LENGTH;
-            }
-            
-            close(sock);
+//            int sock = socket(AF_INET, SOCK_DGRAM, 0);
+//            if (sock < 0) {
+//                BLog(BLOG_ERROR, "socket failed");
+//                goto fail1;
+//            }
+//            
+//            memset(&ifr, 0, sizeof(ifr));
+//            strcpy(ifr.ifr_name, devname_real);
+//            
+//            if (ioctl(sock, SIOCGIFMTU, (void *)&ifr) < 0) {
+//                BLog(BLOG_ERROR, "error getting MTU");
+//                close(sock);
+//                goto fail1;
+//            }
+//            
+//            if (init_data.dev_type == BTAP_DEV_TUN) {
+//                o->frame_mtu = ifr.ifr_mtu;
+//            } else {
+//                o->frame_mtu = ifr.ifr_mtu + BTAP_ETHERNET_HEADER_LENGTH;
+//            }
+//            
+//            close(sock);
         } break;
         
         default: ASSERT(0);
