@@ -2,4 +2,5 @@
 *.swp
 libtun2socks.xcodeproj/xcuserdata/
 libtun2socks.xcodeproj/project.xcworkspace/
+build
 
