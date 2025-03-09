@@ -35,6 +35,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#ifdef __APPLE__
+#define	IPV6_PKTINFO	IPV6_2292PKTINFO
+#endif
 #include <sys/types.h>
 #include <sys/socket.h>
 #ifdef BADVPN_LINUX
@@ -284,7 +287,29 @@ static void do_send (BDatagram *o)
     struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
     
     size_t controllen = 0;
-    
+#ifdef __APPLE__
+    int bytes = -1;
+    switch (o->send.local_addr.type) {
+        case BADDR_TYPE_IPV4: {
+            bytes = sendto(o->fd, iov.iov_base, iov.iov_len, 0, msg.msg_name, msg.msg_namelen);
+        } break;
+
+        case BADDR_TYPE_IPV6: {
+            memset(cmsg, 0, CMSG_SPACE(sizeof(struct in6_pktinfo)));
+            cmsg->cmsg_level = IPPROTO_IPV6;
+            cmsg->cmsg_type = IPV6_PKTINFO;
+            cmsg->cmsg_len = CMSG_LEN(sizeof(struct in6_pktinfo));
+            struct in6_pktinfo *pktinfo = (struct in6_pktinfo *)CMSG_DATA(cmsg);
+            memcpy(pktinfo->ipi6_addr.s6_addr, o->send.local_addr.ipv6, 16);
+            controllen += CMSG_SPACE(sizeof(struct in6_pktinfo));
+            msg.msg_controllen = controllen;
+            if (msg.msg_controllen == 0) {
+                msg.msg_control = NULL;
+            }
+            bytes = sendmsg(o->fd, &msg, 0);
+        } break;
+    }
+#else
     switch (o->send.local_addr.type) {
         case BADDR_TYPE_IPV4: {
 #ifdef BADVPN_FREEBSD
@@ -325,6 +350,7 @@ static void do_send (BDatagram *o)
     
     // send
     int bytes = sendmsg(o->fd, &msg, 0);
+#endif
     if (bytes < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // wait for fd
@@ -333,6 +359,7 @@ static void do_send (BDatagram *o)
             return;
         }
         
+        BLog(BLOG_ERROR, "send failed");
         report_error(o);
         return;
     }
@@ -731,30 +758,6 @@ int BDatagram_GetLastReceiveAddrs (BDatagram *o, BAddr *remote_addr, BIPAddr *lo
     
     *remote_addr = o->recv.remote_addr;
     *local_addr = o->recv.local_addr;
-    return 1;
-}
-
-int BDatagram_GetLocalAddr (BDatagram *o, BAddr *local_addr)
-{
-    DebugObject_Access(&o->d_obj);
-    
-    struct sys_addr sysaddr;
-    sysaddr.len = sizeof(sysaddr.addr);
-    if (getsockname(o->fd, &sysaddr.addr.generic, &sysaddr.len) != 0) {
-        BLog(BLOG_ERROR, "BDatagram_GetLocalAddr: getsockname failed");
-        return 0;
-    }
-
-    BAddr addr;
-    addr_sys_to_socket(&addr, sysaddr);
-
-    if (addr.type == BADDR_TYPE_NONE) {
-        BLog(BLOG_ERROR, "BDatagram_GetLocalAddr: Unsupported address family "
-            "from getsockname: %d", (int)sysaddr.addr.generic.sa_family);
-        return 0;
-    }
-
-    *local_addr = addr;
     return 1;
 }
 

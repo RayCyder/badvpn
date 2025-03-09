@@ -33,7 +33,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#include <signal.h>
 
 #ifdef BADVPN_USE_SIGNALFD
 #include <sys/signalfd.h>
@@ -190,8 +189,8 @@ int BUnixSignal_Init (BUnixSignal *o, BReactor *reactor, sigset_t signals, BUnix
     BReactor_SetFileDescriptorEvents(o->reactor, &o->signalfd_bfd, BREACTOR_READ);
     
     // block signals
-    if (pthread_sigmask(SIG_BLOCK, &o->signals, 0) != 0) {
-        BLog(BLOG_ERROR, "pthread_sigmask block failed");
+    if (sigprocmask(SIG_BLOCK, &o->signals, 0) < 0) {
+        BLog(BLOG_ERROR, "sigprocmask block failed");
         goto fail2;
     }
     
@@ -231,8 +230,8 @@ int BUnixSignal_Init (BUnixSignal *o, BReactor *reactor, sigset_t signals, BUnix
     }
     
     // block signals
-    if (pthread_sigmask(SIG_BLOCK, &o->signals, 0) != 0) {
-        BLog(BLOG_ERROR, "pthread_sigmask block failed");
+    if (sigprocmask(SIG_BLOCK, &o->signals, 0) < 0) {
+        BLog(BLOG_ERROR, "sigprocmask block failed");
         goto fail2;
     }
     
@@ -356,7 +355,7 @@ void BUnixSignal_Free (BUnixSignal *o, int unblock)
     
     if (unblock) {
         // unblock signals
-        ASSERT_FORCE(pthread_sigmask(SIG_UNBLOCK, &o->signals, 0) == 0)
+        ASSERT_FORCE(sigprocmask(SIG_UNBLOCK, &o->signals, 0) == 0)
     }
     
     // free signalfd BFileDescriptor
@@ -371,7 +370,7 @@ void BUnixSignal_Free (BUnixSignal *o, int unblock)
     
     if (unblock) {
         // unblock signals
-        ASSERT_FORCE(pthread_sigmask(SIG_UNBLOCK, &o->signals, 0) == 0)
+        ASSERT_FORCE(sigprocmask(SIG_UNBLOCK, &o->signals, 0) == 0)
     }
     
     // free kevents
@@ -389,8 +388,8 @@ void BUnixSignal_Free (BUnixSignal *o, int unblock)
     
     if (!unblock) {
         // block signals
-        if (pthread_sigmask(SIG_BLOCK, &o->signals, 0) != 0) {
-            BLog(BLOG_ERROR, "pthread_sigmask block failed");
+        if (sigprocmask(SIG_BLOCK, &o->signals, 0) < 0) {
+            BLog(BLOG_ERROR, "sigprocmask block failed");
         }
     }
     
