@@ -36,14 +36,14 @@
 
 #include <stdint.h>
 
-#include <misc/debugcounter.h>
-#include <structure/SLinkedList.h>
-#include <base/DebugObject.h>
+#include "misc/debugcounter.h"
+#include "structure/SLinkedList.h"
+#include "base/DebugObject.h"
 
 struct BSmallPending_s;
 
 #include "BPending_list.h"
-#include <structure/SLinkedList_decl.h>
+#include "structure/SLinkedList_decl.h"
 
 /**
  * Job execution handler.

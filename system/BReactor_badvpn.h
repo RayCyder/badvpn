@@ -50,7 +50,7 @@
 #ifdef BADVPN_USE_KEVENT
 #include <sys/types.h>
 #include <sys/event.h>
-#include <sys/time.h>
+#import <sys/time.h>
 #endif
 
 #ifdef BADVPN_USE_POLL
@@ -59,19 +59,19 @@
 
 #include <stdint.h>
 
-#include <misc/debug.h>
-#include <misc/debugcounter.h>
-#include <base/DebugObject.h>
-#include <structure/LinkedList1.h>
-#include <structure/CAvl.h>
-#include <system/BTime.h>
-#include <base/BPending.h>
+#include "misc/debug.h"
+#include "misc/debugcounter.h"
+#include "base/DebugObject.h"
+#include "structure/LinkedList1.h"
+#include "structure/CAvl.h"
+#include "system/BTime.h"
+#include "base/BPending.h"
 
 struct BSmallTimer_t;
 typedef struct BSmallTimer_t *BReactor_timerstree_link;
 
 #include "BReactor_badvpn_timerstree.h"
-#include <structure/CAvl_decl.h>
+#include "structure/CAvl_decl.h"
 
 #define BTIMER_SET_ABSOLUTE 1
 #define BTIMER_SET_RELATIVE 2

@@ -29,10 +29,10 @@
 
 #include <stdlib.h>
 
-#include <misc/debug.h>
-#include <misc/balloc.h>
+#include "misc/debug.h"
+#include "misc/balloc.h"
 
-#include <flow/PacketBuffer.h>
+#include "flow/PacketBuffer.h"
 
 static void input_handler_done (PacketBuffer *buf, int in_len);
 static void output_handler_done (PacketBuffer *buf);

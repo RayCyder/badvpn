@@ -33,8 +33,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <structure/CAvl.h>
-#include <misc/merge.h>
-#include <misc/debug.h>
+#include "structure/CAvl.h"
+#include "misc/merge.h"
+#include "misc/debug.h"
 
 #endif

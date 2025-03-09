@@ -51,7 +51,7 @@ typedef size_t mem_size_t;
  * allow these defines to be overridden.
  */
 #ifndef mem_free
-#define mem_free free
+#define mem_free(mem) do {free(mem); (mem)=NULL;} while (0);
 #endif
 #ifndef mem_malloc
 #define mem_malloc malloc

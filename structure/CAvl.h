@@ -30,7 +30,7 @@
 #ifndef BADVPN_CAVL_H
 #define BADVPN_CAVL_H
 
-#include <misc/debug.h>
-#include <misc/merge.h>
+#include "misc/debug.h"
+#include "misc/merge.h"
 
 #endif

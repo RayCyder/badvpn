@@ -1,9 +1,6 @@
-/**
- * @file BLog.c
- * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
- * @section LICENSE
- * 
+/*
+ * Copyright (C) Ambroz Bizjak <ambrop7@gmail.com>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +11,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,48 +24,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stddef.h>
+// name of the program
+#define PROGRAM_NAME "udpgw"
 
-#include "BLog.h"
+// maxiumum listen addresses
+#define MAX_LISTEN_ADDRS 16
 
-#ifndef BADVPN_PLUGIN
+// maximum datagram size
+#define DEFAULT_UDP_MTU 65520
 
-struct _BLog_channel blog_channel_list[] = {
-#include <generated/blog_channels_list.h>
-};
+// connection buffer size for sending to client, in packets
+#define CONNECTION_CLIENT_BUFFER_SIZE 1
 
-struct _BLog_global blog_global = {
-    #ifndef NDEBUG
-    0
-    #endif
-};
+// connection buffer size for sending to UDP, in packets
+#define CONNECTION_UDP_BUFFER_SIZE 1
 
-#endif
+// maximum number of clients
+#define DEFAULT_MAX_CLIENTS 3
 
-// keep in sync with level numbers in BLog.h!
-static char *level_names[] = { NULL, "ERROR", "WARNING", "NOTICE", "INFO", "DEBUG" };
+// maximum connections for client
+#define DEFAULT_MAX_CONNECTIONS_FOR_CLIENT 256
 
-static void stdout_log (int channel, int level, const char *msg)
-{
-    fprintf(stdout, "%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
-}
+// how long after nothing has been received to disconnect a client
+#define CLIENT_DISCONNECT_TIMEOUT 20000
 
-static void stderr_log (int channel, int level, const char *msg)
-{
-    fprintf(stderr, "%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
-}
+// SO_SNDBFUF socket option for clients, 0 to not set
+#define CLIENT_DEFAULT_SOCKET_SEND_BUFFER 1048576
 
-static void stdout_stderr_free (void)
-{
-}
-
-void BLog_InitStdout (void)
-{
-    BLog_Init(stdout_log, stdout_stderr_free);
-}
-
-void BLog_InitStderr (void)
-{
-    BLog_Init(stderr_log, stdout_stderr_free);
-}
+extern int udpgw_main (int argc, char **argv);

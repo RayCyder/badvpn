@@ -30,12 +30,12 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <protocol/packetproto.h>
-#include <misc/balign.h>
-#include <misc/debug.h>
-#include <misc/byteorder.h>
+#include "protocol/packetproto.h"
+#include "misc/balign.h"
+#include "misc/debug.h"
+#include "misc/byteorder.h"
 
-#include <flow/PacketProtoEncoder.h>
+#include "flow/PacketProtoEncoder.h"
 
 static void output_handler_recv (PacketProtoEncoder *enc, uint8_t *data)
 {

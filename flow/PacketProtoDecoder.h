@@ -36,11 +36,11 @@
 
 #include <stdint.h>
 
-#include <protocol/packetproto.h>
-#include <misc/debug.h>
-#include <base/DebugObject.h>
-#include <flow/StreamRecvInterface.h>
-#include <flow/PacketPassInterface.h>
+#include "protocol/packetproto.h"
+#include "misc/debug.h"
+#include "base/DebugObject.h"
+#include "flow/StreamRecvInterface.h"
+#include "flow/PacketPassInterface.h"
 
 /**
  * Handler called when a protocol error occurs.

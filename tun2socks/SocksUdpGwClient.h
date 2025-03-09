@@ -28,23 +28,24 @@
 
 #ifndef BADVPN_TUN2SOCKS_SOCKSUDPGWCLIENT_H
 #define BADVPN_TUN2SOCKS_SOCKSUDPGWCLIENT_H
+//#define BADVPN_SOCKS_UDP_RELAY
 
-#include <misc/debug.h>
-#include <base/DebugObject.h>
-#include <system/BReactor.h>
+#include "misc/debug.h"
+#include "base/DebugObject.h"
+#include "system/BReactor.h"
 #ifdef BADVPN_SOCKS_UDP_RELAY
-#include <protocol/udpgw_proto.h>
-#include <protocol/packetproto.h>
-#include <system/BDatagram.h>
-#include <flow/PacketBuffer.h>
-#include <flow/SinglePacketBuffer.h>
-#include <flow/BufferWriter.h>
-#include <structure/BAVL.h>
-#include <structure/LinkedList1.h>
-#include <misc/offset.h>
+#include "protocol/udpgw_proto.h"
+#include "protocol/packetproto.h"
+#include "system/BDatagram.h"
+#include "flow/PacketBuffer.h"
+#include "flow/SinglePacketBuffer.h"
+#include "flow/BufferWriter.h"
+#include "structure/BAVL.h"
+#include "structure/LinkedList1.h"
+#include "misc/offset.h"
 #else
-#include <udpgw_client/UdpGwClient.h>
-#include <socksclient/BSocksClient.h>
+#include "udpgw_client/UdpGwClient.h"
+#include "socksclient/BSocksClient.h"
 #endif
 
 typedef void (*SocksUdpGwClient_handler_received) (void *user, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len);
@@ -96,8 +97,7 @@ typedef struct {
 } SocksUdpGwClient_connection;
 #endif
 
-int SocksUdpGwClient_Init (SocksUdpGwClient *o, int udp_mtu, int max_connections, int send_buffer_size, btime_t keepalive_time,
-                           BAddr socks_server_addr, const struct BSocksClient_auth_info *auth_info, size_t num_auth_info,
+int SocksUdpGwClient_Init (SocksUdpGwClient *o, int udp_mtu, int max_connections, int send_buffer_size, btime_t keepalive_time, BAddr socks_server_addr, const struct BSocksClient_auth_info *auth_info, size_t num_auth_info,
                            BAddr remote_udpgw_addr, btime_t reconnect_time, BReactor *reactor, void *user,
                            SocksUdpGwClient_handler_received handler_received) WARN_UNUSED;
 void SocksUdpGwClient_Free (SocksUdpGwClient *o);

@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flow/PacketRecvInterface.h>
+#include "flow/PacketRecvInterface.h"
 
 void _PacketRecvInterface_job_operation (PacketRecvInterface *i)
 {

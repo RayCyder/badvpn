@@ -39,7 +39,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
 /**
  * Handler function called by tree algorithms to compare two values.

@@ -104,12 +104,22 @@ enum icmp6_pp_code {
 #  include "arch/bpstruct.h"
 #endif
 PACK_STRUCT_BEGIN
+//struct icmp6_hdr {
+//  PACK_STRUCT_FIELD(u8_t type);
+//  PACK_STRUCT_FIELD(u8_t code);
+//  PACK_STRUCT_FIELD(u16_t chksum);
+//  PACK_STRUCT_FIELD(u32_t data);
+//} PACK_STRUCT_STRUCT;
 struct icmp6_hdr {
-  PACK_STRUCT_FIELD(u8_t type);
-  PACK_STRUCT_FIELD(u8_t code);
-  PACK_STRUCT_FIELD(u16_t chksum);
-  PACK_STRUCT_FIELD(u32_t data);
-} PACK_STRUCT_STRUCT;
+    u_int8_t        icmp6_type;     /* type field */
+    u_int8_t        icmp6_code;     /* code field */
+    u_int16_t       icmp6_cksum;    /* checksum field */
+    union {
+        u_int32_t       icmp6_un_data32[1]; /* type-specific field */
+        u_int16_t       icmp6_un_data16[2]; /* type-specific field */
+        u_int8_t        icmp6_un_data8[4];  /* type-specific field */
+    } icmp6_dataun;
+} __attribute__((__packed__));
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
 #  include "arch/epstruct.h"

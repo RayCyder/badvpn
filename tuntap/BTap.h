@@ -45,11 +45,11 @@
 #include <net/if.h>
 #endif
 
-#include <misc/debug.h>
-#include <misc/debugerror.h>
-#include <base/DebugObject.h>
-#include <system/BReactor.h>
-#include <flow/PacketRecvInterface.h>
+#include "misc/debug.h"
+#include "misc/debugerror.h"
+#include "base/DebugObject.h"
+#include "system/BReactor.h"
+#include "flow/PacketRecvInterface.h"
 
 #define BTAP_ETHERNET_HEADER_LENGTH 14
 
@@ -105,16 +105,7 @@ typedef struct {
  * @param tun whether to create a TUN (IP) device or a TAP (Ethernet) device. Must be 0 or 1.
  * @return 1 on success, 0 on failure
  */
-#if defined(__APPLE__)
-    #include <TargetConditionals.h>
-#else
-    #define TARGET_OS_IOS 0
-#endif
-#if TARGET_OS_IOS
-int BTap_Init (BTap *o, BReactor *reactor, int fd, int mtu, BTap_handler_error handler_error, void *handler_error_user, int tun) WARN_UNUSED;
-#else
-int BTap_Init (BTap *o, BReactor *bsys, char *devname, BTap_handler_error handler_error, void *handler_error_user, int tun) WARN_UNUSED;
-#endif
+int BTap_Init (BTap *o, BReactor *reactor, int fd, int mtu, BTap_handler_error handler_error, void *handler_error_user, int tun);
 
 enum BTap_dev_type {BTAP_DEV_TUN, BTAP_DEV_TAP};
 

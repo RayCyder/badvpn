@@ -24,11 +24,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 // name of the program
 #define PROGRAM_NAME "tun2socks"
 
 // size of temporary buffer for passing data from the SOCKS server to TCP for sending
-#define CLIENT_SOCKS_RECV_BUF_SIZE 8192
+#define CLIENT_SOCKS_RECV_BUF_SIZE 2048
 
 // maximum number of udpgw connections
 #define DEFAULT_UDPGW_MAX_CONNECTIONS 256
@@ -41,10 +42,6 @@
 
 // udpgw keepalive sending interval
 #define UDPGW_KEEPALIVE_TIME 10000
-
-// option to override the destination addresses to give the SOCKS server
-//#define OVERRIDE_DEST_ADDR "10.111.0.2:2000"
-
 // debug
 #define TCP_DATA_LOG_ENABLE 1
 // option to override the destination addresses to give the SOCKS server
@@ -55,12 +52,5 @@
 // or far-away SOCKS server could require 300 ms to connect, and a chatty client (e.g.
 // STUN) could send a packet every 20 ms, so a default limit of 16 seems reasonable.
 #define SOCKS_UDP_SEND_BUFFER_PACKETS 16
-#if defined(__APPLE__)
-    #include <TargetConditionals.h>
-#else
-    #define TARGET_OS_IOS 0
-#endif
-#if TARGET_OS_IOS
 extern int tun2socks_main (int argc, char **argv, int fd, int mtu);
-extern void stop_tun2socks(void);
-#endif
+extern void stop_tun2socks();

@@ -35,12 +35,12 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <misc/debug.h>
-#include <misc/byteorder.h>
-#include <misc/packed.h>
-#include <misc/print_macros.h>
-#include <misc/byteorder.h>
-#include <base/BLog.h>
+#include "misc/debug.h"
+#include "misc/byteorder.h"
+#include "misc/packed.h"
+#include "misc/print_macros.h"
+#include "misc/byteorder.h"
+#include "base/BLog.h"
 
 #define u8_t uint8_t
 #define s8_t int8_t
@@ -77,11 +77,7 @@
 )
 
 // for BYTE_ORDER
-#if defined(BADVPN_USE_WINAPI) && !defined(_MSC_VER)
-    #include <sys/param.h>
-#elif defined(BADVPN_LINUX)
-    #include <endian.h>
-#elif defined(BADVPN_FREEBSD)
+#if defined(BADVPN_FREEBSD)
     #include <machine/endian.h>
 #else
     #define LITTLE_ENDIAN 1234

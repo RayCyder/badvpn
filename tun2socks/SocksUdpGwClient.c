@@ -26,16 +26,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <misc/debug.h>
-#include <base/BLog.h>
+#include "misc/debug.h"
+#include "base/BLog.h"
 
-#include <tun2socks/SocksUdpGwClient.h>
+#include "tun2socks/SocksUdpGwClient.h"
 
-#include <generated/blog_channel_SocksUdpGwClient.h>
+#include "generated/blog_channel_SocksUdpGwClient.h"
 
 #ifdef BADVPN_SOCKS_UDP_RELAY
 
-#include <misc/socks_proto.h>
+#include "misc/socks_proto.h"
 #define CONNECTION_UDP_BUFFER_SIZE 1
 
 #else
@@ -253,7 +253,7 @@ static SocksUdpGwClient_connection *connection_init (SocksUdpGwClient *client, S
     BPending_Set(&o->first_job);
     
     // init UDP dgram
-    if (!BDatagram_Init(&o->udp_dgram, client->socks_server_addr.type, client->reactor, o, (BDatagram_handler)dgram_handler)) {
+    if (!BDatagram_Init(&o->udp_dgram, client->remote_udpgw_addr.type, client->reactor, o, (BDatagram_handler)dgram_handler)) {
         goto fail0;
     }
     
@@ -266,8 +266,8 @@ static SocksUdpGwClient_connection *connection_init (SocksUdpGwClient *client, S
     // set UDP dgram send address
     BIPAddr ipaddr;
     memset(&ipaddr, 0, sizeof(ipaddr));
-    ipaddr.type = client->socks_server_addr.type;
-    BDatagram_SetSendAddrs(&o->udp_dgram, client->socks_server_addr, ipaddr);
+    ipaddr.type = client->remote_udpgw_addr.type;
+    BDatagram_SetSendAddrs(&o->udp_dgram, client->remote_udpgw_addr, ipaddr);
     
     // init UDP dgram interfaces
     BDatagram_SendAsync_Init(&o->udp_dgram, client->udp_mtu);
@@ -380,7 +380,7 @@ static void try_connect (SocksUdpGwClient *o)
     ASSERT(!BTimer_IsRunning(&o->reconnect_timer))
     
     // init SOCKS client
-    if (!BSocksClient_Init(&o->socks_client, o->socks_server_addr, o->auth_info, o->num_auth_info, o->remote_udpgw_addr, (BSocksClient_handler)socks_client_handler, o, o->reactor)) {
+    if (!BSocksClient_Init(&o->socks_client, o->socks_server_addr, o->auth_info, o->num_auth_info, o->remote_udpgw_addr,/*udp=*/false, (BSocksClient_handler)socks_client_handler, o, o->reactor)) {
         BLog(BLOG_ERROR, "BSocksClient_Init failed");
         goto fail0;
     }
@@ -448,7 +448,7 @@ static void socks_client_handler (SocksUdpGwClient *o, int event)
             BReactor_SetTimer(o->reactor, &o->reconnect_timer);
         } break;
         
-        default: ASSERT(0);
+//        default: ASSERT(0);
     }
 }
 
@@ -478,13 +478,12 @@ static void udpgw_handler_received (SocksUdpGwClient *o, BAddr local_addr, BAddr
 
 #endif
 
-int SocksUdpGwClient_Init (SocksUdpGwClient *o, int udp_mtu, int max_connections, int send_buffer_size, btime_t keepalive_time,
-                           BAddr socks_server_addr, const struct BSocksClient_auth_info *auth_info, size_t num_auth_info,
+int SocksUdpGwClient_Init (SocksUdpGwClient *o, int udp_mtu, int max_connections, int send_buffer_size, btime_t keepalive_time, BAddr socks_server_addr, const struct BSocksClient_auth_info *auth_info, size_t num_auth_info,
                            BAddr remote_udpgw_addr, btime_t reconnect_time, BReactor *reactor, void *user,
                            SocksUdpGwClient_handler_received handler_received)
 {
     // see asserts in UdpGwClient_Init
-    ASSERT(!BAddr_IsInvalid(&socks_server_addr))
+//    ASSERT(!BAddr_IsInvalid(&socks_server_addr))
 #ifndef BADVPN_SOCKS_UDP_RELAY
     ASSERT(remote_udpgw_addr.type == BADDR_TYPE_IPV4 || remote_udpgw_addr.type == BADDR_TYPE_IPV6)
 #endif

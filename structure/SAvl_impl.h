@@ -30,7 +30,7 @@
 #include "SAvl_header.h"
 
 #include "SAvl_tree.h"
-#include <structure/CAvl_impl.h>
+#include "structure/CAvl_impl.h"
 
 static void SAvl_Init (SAvl *o)
 {

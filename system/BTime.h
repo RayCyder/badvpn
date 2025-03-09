@@ -45,11 +45,11 @@
 
 #include <stdint.h>
 
-#include <misc/debug.h>
-#include <misc/overflow.h>
-#include <base/BLog.h>
+#include "misc/debug.h"
+#include "misc/overflow.h"
+#include "base/BLog.h"
 
-#include <generated/blog_channel_BTime.h>
+#include "generated/blog_channel_BTime.h"
 
 typedef int64_t btime_t;
 
@@ -69,9 +69,12 @@ struct _BTime_global {
     #endif
 };
 
-#ifndef CLOCK_MONOTONIC
+#ifdef __MACH__
 #define CLOCK_MONOTONIC 1
+//int clock_gettime(int clk_id, struct timespec* t);
+int clock_gettime(clockid_t __clock_id, struct timespec *__tp);
 #endif
+
 
 extern struct _BTime_global btime_global;
 
