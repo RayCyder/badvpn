@@ -6,7 +6,7 @@ if (NOT EMSCRIPTEN)
         BSignal.c
         BNetwork.c
         BConnection_common.c
-        # BDatagram_common.c
+        BDatagram_common.c
     )
 
     if (WIN32)
@@ -22,10 +22,10 @@ if (NOT EMSCRIPTEN)
             BUnixSignal.c
             BConnection_unix.c
             BDatagram_unix.c
-            # BProcess.c
-            # BInputProcess.c
-            # BThreadSignal.c
-            # BLockReactor.c
+            BProcess.c
+            BInputProcess.c
+            BThreadSignal.c
+            BLockReactor.c
         )
     endif ()
 endif ()

@@ -8,9 +8,8 @@ install(
     TARGETS badvpn-tun2socks
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-target_compile_options(badvpn-tun2socks PRIVATE -DBADVPN_LIBTSOCKS)
-install(FILES tun2socks.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
-# install(
-#     FILES badvpn-tun2socks.8
-#     DESTINATION ${CMAKE_INSTALL_MANDIR}/man8
-# )
+
+install(
+    FILES badvpn-tun2socks.8
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man8
+)

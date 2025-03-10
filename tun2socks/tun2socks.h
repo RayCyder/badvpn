@@ -45,22 +45,8 @@
 // option to override the destination addresses to give the SOCKS server
 //#define OVERRIDE_DEST_ADDR "10.111.0.2:2000"
 
-// debug
-#define TCP_DATA_LOG_ENABLE 1
-// option to override the destination addresses to give the SOCKS server
-//#define OVERRIDE_DEST_ADDR "10.111.0.2:2000"
-
 // Max number of buffered outgoing UDP packets for SOCKS5-UDP. It should be large
 // enough to prevent packet loss while the SOCKS UDP association is being set up. A slow
 // or far-away SOCKS server could require 300 ms to connect, and a chatty client (e.g.
 // STUN) could send a packet every 20 ms, so a default limit of 16 seems reasonable.
 #define SOCKS_UDP_SEND_BUFFER_PACKETS 16
-#if defined(__APPLE__)
-    #include <TargetConditionals.h>
-#else
-    #define TARGET_OS_IOS 0
-#endif
-#if TARGET_OS_IOS
-extern int tun2socks_main (int argc, char **argv, int fd, int mtu);
-extern void stop_tun2socks(void);
-#endif

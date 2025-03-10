@@ -101,23 +101,16 @@ endif ()
 
 
 if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
-    # iOS specific definitions
-    set(IOS_DEFINITIONS
-        -DBADVPN_USE_KEVENT
-        -DBADVPN_FREEBSD
-        -DBADVPN_SOCKS_UDP_RELAY
-        -DBADVPN_LIBTSOCKS
-    )
-    
-    # Add all definitions at once
-    add_definitions(${IOS_DEFINITIONS})
-    
-    # Log important configuration values
-    # foreach(def ${IOS_DEFINITIONS})
-    #     string(REPLACE "-D" "" def_name ${def})
-    #     message(STATUS "${def_name}: 1")
-    # endforeach()
-endif()
+    # set(BADVPN_USE_SIGNALFD 0)
+    #add_definitions(-DBADVPN_USE_SIGNALFD)
+    # set(BADVPN_USE_SELFPIPE 0)
+    #add_definitions(-DBADVPN_USE_SELFPIPE)
+    message(STATUS "BADVPN_USE_SIGNALFD: ${BADVPN_USE_SIGNALFD}")
+    message(STATUS "BADVPN_USE_SELFPIPE: ${BADVPN_USE_SELFPIPE}")
+    message(STATUS "BADVPN_USE_KEVENT: ${BADVPN_USE_KEVENT}")   
+    add_definitions(-DBADVPN_USE_KEVENT)
+    add_definitions(-DBADVPN_FREEBSD)
+endif ()
 
 if(APPLE)
     add_definitions(-DBADVPN_DARWIN)   # ✅ Ensure it's defined for macOS/iOS
@@ -267,10 +260,10 @@ else ()
 endif ()
 
 # install man pages
-# install(
-#     FILES badvpn.7
-# 	DESTINATION ${CMAKE_INSTALL_MANDIR}/man7
-# )
+install(
+    FILES badvpn.7
+	DESTINATION ${CMAKE_INSTALL_MANDIR}/man7
+)
 
 # reset variables indicating whether we're building various libraries,
 # and set them in the respective CMakeLists files. This is used to disable
@@ -357,7 +350,7 @@ endif ()
 if (BUILD_TUN2SOCKS)
     add_subdirectory(socksclient)
     add_subdirectory(udpgw_client)
-    #add_subdirectory(socks_udp_client)
+    add_subdirectory(socks_udp_client)
     add_subdirectory(lwip)
 endif ()
 

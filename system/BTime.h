@@ -69,10 +69,6 @@ struct _BTime_global {
     #endif
 };
 
-#ifndef CLOCK_MONOTONIC
-#define CLOCK_MONOTONIC 1
-#endif
-
 extern struct _BTime_global btime_global;
 
 static void BTime_Init (void)
