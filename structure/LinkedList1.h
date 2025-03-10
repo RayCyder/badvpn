@@ -36,7 +36,7 @@
 
 #include <stddef.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
 /**
  * Linked list node.
@@ -162,7 +162,7 @@ void LinkedList1_Init (LinkedList1 *list)
 
 int LinkedList1_IsEmpty (LinkedList1 *list)
 {
-    return (!list->first);
+    return (list->first) == NULL;
 }
 
 LinkedList1Node * LinkedList1_GetFirst (LinkedList1 *list)

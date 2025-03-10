@@ -27,10 +27,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <protocol/packetproto.h>
-#include <misc/debug.h>
+#include "protocol/packetproto.h"
+#include "misc/debug.h"
 
-#include <flow/PacketProtoFlow.h>
+#include "flow/PacketProtoFlow.h"
 
 int PacketProtoFlow_Init (PacketProtoFlow *o, int input_mtu, int num_packets, PacketPassInterface *output, BPendingGroup *pg)
 {

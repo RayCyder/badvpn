@@ -38,8 +38,8 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include <misc/balign.h>
-#include <misc/debug.h>
+#include "misc/balign.h"
+#include "misc/debug.h"
 
 #ifndef NDEBUG
 #define CHUNKBUFFER2_ASSERT_BUFFER(_buf) _ChunkBuffer2_assert_buffer(_buf);

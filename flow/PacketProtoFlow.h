@@ -35,12 +35,12 @@
 #ifndef BADVPN_FLOW_PACKETPROTOFLOW_H
 #define BADVPN_FLOW_PACKETPROTOFLOW_H
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
-#include <base/DebugObject.h>
-#include <flow/BufferWriter.h>
-#include <flow/PacketProtoEncoder.h>
-#include <flow/PacketBuffer.h>
+#include "base/DebugObject.h"
+#include "flow/BufferWriter.h"
+#include "flow/PacketProtoEncoder.h"
+#include "flow/PacketBuffer.h"
 
 /**
  * Buffer which encodes packets with PacketProto, with {@link BufferWriter}

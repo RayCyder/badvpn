@@ -27,12 +27,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <base/BLog.h>
-#include <system/BAddr.h>
+#include "base/BLog.h"
+#include "system/BAddr.h"
 
 #include "BDatagram.h"
 
-#include <generated/blog_channel_BDatagram.h>
+#include "generated/blog_channel_BDatagram.h"
 
 int BDatagram_GetLocalPort (BDatagram *o, uint16_t *local_port)
 {

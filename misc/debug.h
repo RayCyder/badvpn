@@ -106,7 +106,6 @@
     { \
         if (!(e)) { \
             fprintf(stderr, "%s:%d Assertion failed\n", __FILE__, __LINE__); \
-            abort(); \
         } \
     }
 

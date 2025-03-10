@@ -29,13 +29,13 @@
 
 #include <stddef.h>
 
-#include <misc/debug.h>
-#include <misc/offset.h>
+#include "misc/debug.h"
+#include "misc/offset.h"
 
 #include "BPending.h"
 
 #include "BPending_list.h"
-#include <structure/SLinkedList_impl.h>
+#include "structure/SLinkedList_impl.h"
 
 void BPendingGroup_Init (BPendingGroup *g)
 {

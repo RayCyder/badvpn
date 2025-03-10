@@ -30,12 +30,12 @@
 #ifndef BADVPN_SYSTEM_BDATAGRAM
 #define BADVPN_SYSTEM_BDATAGRAM
 
-#include <misc/debug.h>
-#include <flow/PacketPassInterface.h>
-#include <flow/PacketRecvInterface.h>
-#include <system/BAddr.h>
-#include <system/BReactor.h>
-#include <system/BNetwork.h>
+#include "misc/debug.h"
+#include "flow/PacketPassInterface.h"
+#include "flow/PacketRecvInterface.h"
+#include "system/BAddr.h"
+#include "system/BReactor.h"
+#include "system/BNetwork.h"
 
 struct BDatagram_s;
 

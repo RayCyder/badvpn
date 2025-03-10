@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
 static char * concat_strings (int num, ...)
 {

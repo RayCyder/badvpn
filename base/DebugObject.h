@@ -44,8 +44,8 @@
 #include <pthread.h>
 #endif
 
-#include <misc/debug.h>
-#include <misc/debugcounter.h>
+#include "misc/debug.h"
+#include "misc/debugcounter.h"
 
 #define DEBUGOBJECT_VALID UINT32_C(0x31415926)
 
@@ -55,8 +55,6 @@
 typedef struct {
     #ifndef NDEBUG
     uint32_t c;
-    #else
-    int dummy_field; // struct must have at least one field
     #endif
 } DebugObject;
 
