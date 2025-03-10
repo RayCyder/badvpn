@@ -35,18 +35,18 @@
 #ifndef __LWIP_SNMP_MSG_H__
 #define __LWIP_SNMP_MSG_H__
 
-#include "lwip/opt.h"
-#include "lwip/snmp.h"
-#include "lwip/snmp_structs.h"
-#include "lwip/ip_addr.h"
-#include "lwip/err.h"
+#include <lwip/opt.h>
+#include <lwip/snmp.h>
+#include <lwip/snmp_structs.h>
+#include <lwip/ip_addr.h>
+#include <lwip/err.h>
 
 #if LWIP_SNMP
 
 #if SNMP_PRIVATE_MIB
 /* When using a private MIB, you have to create a file 'private_mib.h' that contains
  * a 'struct mib_array_node mib_private' which contains your MIB. */
-#include "private_mib.h"
+#include <private_mib.h>
 #endif
 
 #ifdef __cplusplus

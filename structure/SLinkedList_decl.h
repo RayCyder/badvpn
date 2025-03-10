@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "SLinkedList_header.h"
+#include <SLinkedList_header.h>
 
 typedef struct {
     SLinkedListEntry *first;
@@ -64,4 +64,4 @@ static SLinkedListEntry * SLinkedList_Last (const SLinkedList *o);
 #endif
 static int SLinkedList_IsEmpty (const SLinkedList *o);
 
-#include "SLinkedList_footer.h"
+#include <SLinkedList_footer.h>

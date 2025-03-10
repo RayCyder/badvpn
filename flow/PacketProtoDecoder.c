@@ -30,14 +30,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "misc/debug.h"
-#include "misc/byteorder.h"
-#include "misc/minmax.h"
-#include "base/BLog.h"
+#include <misc/debug.h>
+#include <misc/byteorder.h>
+#include <misc/minmax.h>
+#include <base/BLog.h>
 
-#include "flow/PacketProtoDecoder.h"
+#include <flow/PacketProtoDecoder.h>
 
-#include "generated/blog_channel_PacketProtoDecoder.h"
+#include <generated/blog_channel_PacketProtoDecoder.h>
 
 static void process_data (PacketProtoDecoder *enc);
 static void input_handler_done (PacketProtoDecoder *enc, int data_len);

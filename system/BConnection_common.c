@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "BConnection.h"
+#include <BConnection.h>
 
 int BListener_Init (BListener *o, BAddr addr, BReactor *reactor, void *user,
                     BListener_handler handler)

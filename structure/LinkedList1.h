@@ -36,7 +36,7 @@
 
 #include <stddef.h>
 
-#include "misc/debug.h"
+#include <misc/debug.h>
 
 /**
  * Linked list node.

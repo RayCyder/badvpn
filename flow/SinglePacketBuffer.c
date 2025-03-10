@@ -29,10 +29,10 @@
 
 #include <stdlib.h>
 
-#include "misc/debug.h"
-#include "misc/balloc.h"
+#include <misc/debug.h>
+#include <misc/balloc.h>
 
-#include "flow/SinglePacketBuffer.h"
+#include <flow/SinglePacketBuffer.h>
 
 static void input_handler_done (SinglePacketBuffer *o, int in_len)
 {

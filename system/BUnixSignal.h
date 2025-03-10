@@ -41,9 +41,9 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "misc/debug.h"
-#include "system/BReactor.h"
-#include "base/DebugObject.h"
+#include <misc/debug.h>
+#include <system/BReactor.h>
+#include <base/DebugObject.h>
 
 struct BUnixSignal_s;
 

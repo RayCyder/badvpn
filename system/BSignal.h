@@ -34,8 +34,8 @@
 #ifndef BADVPN_SYSTEM_BSIGNAL_H
 #define BADVPN_SYSTEM_BSIGNAL_H
 
-#include "misc/debug.h"
-#include "system/BReactor.h"
+#include <misc/debug.h>
+#include <system/BReactor.h>
 
 typedef void (*BSignal_handler) (void *user);
 

@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "system/BTime.h"
+#include <system/BTime.h>
 
 #ifndef BADVPN_PLUGIN
 struct _BTime_global btime_global = {

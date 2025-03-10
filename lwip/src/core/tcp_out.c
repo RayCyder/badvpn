@@ -38,24 +38,24 @@
  *
  */
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_TCP /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/tcp_impl.h"
-#include "lwip/def.h"
-#include "lwip/mem.h"
-#include "lwip/memp.h"
-#include "lwip/ip_addr.h"
-#include "lwip/netif.h"
-#include "lwip/inet_chksum.h"
-#include "lwip/stats.h"
-#include "lwip/snmp.h"
-#include "lwip/ip6.h"
-#include "lwip/ip6_addr.h"
-#include "lwip/inet_chksum.h"
+#include <lwip/tcp_impl.h>
+#include <lwip/def.h>
+#include <lwip/mem.h>
+#include <lwip/memp.h>
+#include <lwip/ip_addr.h>
+#include <lwip/netif.h>
+#include <lwip/inet_chksum.h>
+#include <lwip/stats.h>
+#include <lwip/snmp.h>
+#include <lwip/ip6.h>
+#include <lwip/ip6_addr.h>
+#include <lwip/inet_chksum.h>
 #if LWIP_TCP_TIMESTAMPS
-#include "lwip/sys.h"
+#include <lwip/sys.h>
 #endif
 
 #include <string.h>

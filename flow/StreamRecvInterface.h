@@ -42,9 +42,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "misc/debug.h"
-#include "base/DebugObject.h"
-#include "base/BPending.h"
+#include <misc/debug.h>
+#include <base/DebugObject.h>
+#include <base/BPending.h>
 
 #define SRI_STATE_NONE 1
 #define SRI_STATE_OPERATION_PENDING 2

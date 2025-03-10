@@ -39,28 +39,28 @@
  *
  */
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
-#include "lwip/timers.h"
-#include "lwip/tcp_impl.h"
+#include <lwip/timers.h>
+#include <lwip/tcp_impl.h>
 
 #if LWIP_TIMERS
 
-#include "lwip/def.h"
-#include "lwip/memp.h"
-#include "lwip/tcpip.h"
+#include <lwip/def.h>
+#include <lwip/memp.h>
+#include <lwip/tcpip.h>
 
-#include "lwip/ip_frag.h"
-#include "netif/etharp.h"
-#include "lwip/dhcp.h"
-#include "lwip/autoip.h"
-#include "lwip/igmp.h"
-#include "lwip/dns.h"
-#include "lwip/nd6.h"
-#include "lwip/ip6_frag.h"
-#include "lwip/mld6.h"
-#include "lwip/sys.h"
-#include "lwip/pbuf.h"
+#include <lwip/ip_frag.h>
+#include <netif/etharp.h>
+#include <lwip/dhcp.h>
+#include <lwip/autoip.h>
+#include <lwip/igmp.h>
+#include <lwip/dns.h>
+#include <lwip/nd6.h>
+#include <lwip/ip6_frag.h>
+#include <lwip/mld6.h>
+#include <lwip/sys.h>
+#include <lwip/pbuf.h>
 
 /** The one and only timeout list */
 static struct sys_timeo *next_timeout;

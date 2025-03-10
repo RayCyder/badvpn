@@ -45,11 +45,11 @@
 #include <net/if.h>
 #endif
 
-#include "misc/debug.h"
-#include "misc/debugerror.h"
-#include "base/DebugObject.h"
-#include "system/BReactor.h"
-#include "flow/PacketRecvInterface.h"
+#include <misc/debug.h>
+#include <misc/debugerror.h>
+#include <base/DebugObject.h>
+#include <system/BReactor.h>
+#include <flow/PacketRecvInterface.h>
 
 #define BTAP_ETHERNET_HEADER_LENGTH 14
 

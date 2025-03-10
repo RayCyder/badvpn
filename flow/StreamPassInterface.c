@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flow/StreamPassInterface.h"
+#include <flow/StreamPassInterface.h>
 
 void _StreamPassInterface_job_operation (StreamPassInterface *i)
 {

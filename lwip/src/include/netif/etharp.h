@@ -35,14 +35,14 @@
 #ifndef __NETIF_ETHARP_H__
 #define __NETIF_ETHARP_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_ARP || LWIP_ETHERNET /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/pbuf.h"
-#include "lwip/ip_addr.h"
-#include "lwip/netif.h"
-#include "lwip/ip.h"
+#include <lwip/pbuf.h>
+#include <lwip/ip_addr.h>
+#include <lwip/netif.h>
+#include <lwip/ip.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct eth_addr {
@@ -61,11 +61,11 @@ struct eth_addr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 /** Ethernet header */
@@ -79,7 +79,7 @@ struct eth_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #define SIZEOF_ETH_HDR (14 + ETH_PAD_SIZE)
@@ -87,7 +87,7 @@ PACK_STRUCT_END
 #if ETHARP_SUPPORT_VLAN
 
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 /** VLAN header inserted between ethernet header and payload
@@ -99,7 +99,7 @@ struct eth_vlan_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #define SIZEOF_VLAN_HDR 4
@@ -108,7 +108,7 @@ PACK_STRUCT_END
 #endif /* ETHARP_SUPPORT_VLAN */
 
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 /** the ARP message, see RFC 826 ("Packet format") */
@@ -125,7 +125,7 @@ struct etharp_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #define SIZEOF_ETHARP_HDR 28

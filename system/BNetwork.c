@@ -36,12 +36,12 @@
 #include <signal.h>
 #endif
 
-#include "misc/debug.h"
-#include "base/BLog.h"
+#include <misc/debug.h>
+#include <base/BLog.h>
 
-#include "system/BNetwork.h"
+#include <system/BNetwork.h>
 
-#include "generated/blog_channel_BNetwork.h"
+#include <generated/blog_channel_BNetwork.h>
 
 extern int bnetwork_initialized;
 

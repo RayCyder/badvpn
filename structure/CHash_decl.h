@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CHash_header.h"
+#include <CHash_header.h>
 
 typedef struct {
     CHashLink *buckets;
@@ -56,4 +56,4 @@ static CHashRef CHash_GetNextEqual (const CHash *o, CHashArg arg, CHashRef entry
 static int CHash_MultiplyBuckets (CHash *o, CHashArg arg, int exp);
 static void CHash_Verify (const CHash *o, CHashArg arg);
 
-#include "CHash_footer.h"
+#include <CHash_footer.h>

@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "PacketPassInactivityMonitor.h"
+#include <PacketPassInactivityMonitor.h>
 
 static void input_handler_send (PacketPassInactivityMonitor *o, uint8_t *data, int data_len)
 {

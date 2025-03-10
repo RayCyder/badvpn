@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "SLinkedList_header.h"
+#include <SLinkedList_header.h>
 
 static void SLinkedListMarkRemoved (SLinkedListEntry *entry)
 {
@@ -179,4 +179,4 @@ static int SLinkedList_IsEmpty (const SLinkedList *o)
     return !o->first;
 }
 
-#include "SLinkedList_footer.h"
+#include <SLinkedList_footer.h>

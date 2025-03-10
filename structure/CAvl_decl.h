@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CAvl_header.h"
+#include <CAvl_header.h>
 
 typedef struct {
     CAvlLink root;
@@ -74,4 +74,4 @@ static CAvlAssoc CAvl_ExclusiveAssocPrefixSum (const CAvl *o, CAvlArg arg, CAvlR
 static CAvlRef CAvl_FindLastExclusiveAssocPrefixSumLesserEqual (const CAvl *o, CAvlArg arg, CAvlAssoc sum, int (*sum_less) (void *, CAvlAssoc, CAvlAssoc), void *user);
 #endif
 
-#include "CAvl_footer.h"
+#include <CAvl_footer.h>

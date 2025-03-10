@@ -32,18 +32,18 @@
 #ifndef __LWIP_TCP_IMPL_H__
 #define __LWIP_TCP_IMPL_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_TCP /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/tcp.h"
-#include "lwip/mem.h"
-#include "lwip/pbuf.h"
-#include "lwip/ip.h"
-#include "lwip/icmp.h"
-#include "lwip/err.h"
-#include "lwip/ip6.h"
-#include "lwip/ip6_addr.h"
+#include <lwip/tcp.h>
+#include <lwip/mem.h>
+#include <lwip/pbuf.h>
+#include <lwip/ip.h>
+#include <lwip/icmp.h>
+#include <lwip/err.h>
+#include <lwip/ip6.h>
+#include <lwip/ip6_addr.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -155,7 +155,7 @@ err_t            tcp_process_refused_data(struct tcp_pcb *pcb);
  * Some fields are converted to host byte order in tcp_input().
  */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct tcp_hdr {
@@ -170,7 +170,7 @@ struct tcp_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #define TCPH_HDRLEN(phdr) (ntohs((phdr)->_hdrlen_rsvd_flags) >> 12)

@@ -31,15 +31,15 @@
 #include <windows.h>
 #else
 #include <signal.h>
-#include "system/BUnixSignal.h"
+#include <system/BUnixSignal.h>
 #endif
 
-#include "misc/debug.h"
-#include "base/BLog.h"
+#include <misc/debug.h>
+#include <base/BLog.h>
 
-#include "system/BSignal.h"
+#include <system/BSignal.h>
 
-#include "generated/blog_channel_BSignal.h"
+#include <generated/blog_channel_BSignal.h>
 
 static struct {
     int initialized;

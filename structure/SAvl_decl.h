@@ -27,12 +27,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "SAvl_header.h"
+#include <SAvl_header.h>
 
 typedef SAvlEntry *SAvl__TreeLink;
 
-#include "SAvl_tree.h"
-#include "structure/CAvl_decl.h"
+#include <SAvl_tree.h>
+#include <structure/CAvl_decl.h>
 
 typedef struct {
     SAvl__Tree tree;
@@ -70,4 +70,4 @@ static SAvlCount SAvl_IndexOf (const SAvl *o, SAvlArg arg, SAvlEntry *entry);
 static SAvlEntry * SAvl_GetAt (const SAvl *o, SAvlArg arg, SAvlCount index);
 #endif
 
-#include "SAvl_footer.h"
+#include <SAvl_footer.h>

@@ -36,13 +36,13 @@
 
 #include <stdint.h>
 
-#include "misc/debug.h"
-#include "misc/debugcounter.h"
-#include "structure/SAvl.h"
-#include "structure/LinkedList1.h"
-#include "base/DebugObject.h"
-#include "base/BPending.h"
-#include "flow/PacketPassInterface.h"
+#include <misc/debug.h>
+#include <misc/debugcounter.h>
+#include <structure/SAvl.h>
+#include <structure/LinkedList1.h>
+#include <base/DebugObject.h>
+#include <base/BPending.h>
+#include <flow/PacketPassInterface.h>
 
 // reduce this to test time overflow handling
 #define FAIRQUEUE_MAX_TIME UINT64_MAX
@@ -51,8 +51,8 @@ typedef void (*PacketPassFairQueue_handler_busy) (void *user);
 
 struct PacketPassFairQueueFlow_s;
 
-#include "PacketPassFairQueue_tree.h"
-#include "structure/SAvl_decl.h"
+#include <PacketPassFairQueue_tree.h>
+#include <structure/SAvl_decl.h>
 
 typedef struct PacketPassFairQueueFlow_s {
     struct PacketPassFairQueue_s *m;

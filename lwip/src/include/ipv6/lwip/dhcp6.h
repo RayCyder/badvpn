@@ -43,7 +43,7 @@
 #ifndef __LWIP_IP6_DHCP6_H__
 #define __LWIP_IP6_DHCP6_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6_DHCP6  /* don't build if not configured for use in lwipopts.h */
 

@@ -3,9 +3,9 @@
 #endif
 
 #if defined(BADVPN_BREACTOR_BADVPN)
-#include "BReactor_badvpn.h"
+#include <BReactor_badvpn.h>
 #elif defined(BADVPN_BREACTOR_GLIB)
-#include "BReactor_glib.h"
+#include <BReactor_glib.h>
 #elif defined(BADVPN_BREACTOR_EMSCRIPTEN)
-#include "BReactor_emscripten.h"
+#include <BReactor_emscripten.h>
 #endif

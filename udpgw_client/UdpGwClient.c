@@ -29,14 +29,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "misc/offset.h"
-#include "misc/byteorder.h"
-#include "misc/compare.h"
-#include "base/BLog.h"
+#include <misc/offset.h>
+#include <misc/byteorder.h>
+#include <misc/compare.h>
+#include <base/BLog.h>
 
-#include "udpgw_client/UdpGwClient.h"
+#include <udpgw_client/UdpGwClient.h>
 
-#include "generated/blog_channel_UdpGwClient.h"
+#include <generated/blog_channel_UdpGwClient.h>
 
 static int uint16_comparator (void *unused, uint16_t *v1, uint16_t *v2);
 static int conaddr_comparator (void *unused, struct UdpGwClient_conaddr *v1, struct UdpGwClient_conaddr *v2);

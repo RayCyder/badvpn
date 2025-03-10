@@ -36,7 +36,7 @@
 
 #include <stdint.h>
 
-#include "misc/debug.h"
+#include <misc/debug.h>
 
 /**
  * Counter for detecting leaks.

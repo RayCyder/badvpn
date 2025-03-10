@@ -32,15 +32,15 @@
 #ifndef __LWIP_UDP_H__
 #define __LWIP_UDP_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_UDP /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/pbuf.h"
-#include "lwip/netif.h"
-#include "lwip/ip_addr.h"
-#include "lwip/ip.h"
-#include "lwip/ip6_addr.h"
+#include <lwip/pbuf.h>
+#include <lwip/netif.h>
+#include <lwip/ip_addr.h>
+#include <lwip/ip.h>
+#include <lwip/ip6_addr.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,7 +50,7 @@ extern "C" {
 
 /* Fields are (of course) in network byte order. */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct udp_hdr {
@@ -61,7 +61,7 @@ struct udp_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #define UDP_FLAGS_NOCHKSUM       0x01U

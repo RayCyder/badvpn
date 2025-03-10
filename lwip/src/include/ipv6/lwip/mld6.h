@@ -43,12 +43,12 @@
 #ifndef __LWIP_MLD6_H__
 #define __LWIP_MLD6_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6_MLD && LWIP_IPV6  /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/pbuf.h"
-#include "lwip/netif.h"
+#include <lwip/pbuf.h>
+#include <lwip/netif.h>
 
 
 #ifdef __cplusplus
@@ -74,7 +74,7 @@ struct mld_group {
 
 /** Multicast listener report/query/done message header. */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct mld_header {
@@ -88,7 +88,7 @@ struct mld_header {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #define MLD6_TMR_INTERVAL              100 /* Milliseconds */

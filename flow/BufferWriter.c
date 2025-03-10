@@ -27,9 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "misc/debug.h"
+#include <misc/debug.h>
 
-#include "flow/BufferWriter.h"
+#include <flow/BufferWriter.h>
 
 static void output_handler_recv (BufferWriter *o, uint8_t *data)
 {

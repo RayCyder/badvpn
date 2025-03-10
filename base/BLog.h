@@ -37,12 +37,12 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "misc/debug.h"
-#include "misc/memref.h"
-#include "base/BMutex.h"
+#include <misc/debug.h>
+#include <misc/memref.h>
+#include <base/BMutex.h>
 
 // auto-generated channel numbers and number of channels
-#include "generated/blog_channels_defines.h"
+#include <generated/blog_channels_defines.h>
 
 // keep in sync with level names in BLog.c!
 #define BLOG_ERROR 1

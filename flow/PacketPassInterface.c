@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flow/PacketPassInterface.h"
+#include <flow/PacketPassInterface.h>
 
 void _PacketPassInterface_job_operation (PacketPassInterface *i)
 {

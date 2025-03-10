@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flow/StreamRecvInterface.h"
+#include <flow/StreamRecvInterface.h>
 
 void _StreamRecvInterface_job_operation (StreamRecvInterface *i)
 {

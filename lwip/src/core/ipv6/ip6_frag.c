@@ -39,15 +39,15 @@
  * <delamer@inicotech.com>
  */
 
-#include "lwip/opt.h"
-#include "lwip/ip6_frag.h"
-#include "lwip/ip6.h"
-#include "lwip/icmp6.h"
-#include "lwip/nd6.h"
+#include <lwip/opt.h>
+#include <lwip/ip6_frag.h>
+#include <lwip/ip6.h>
+#include <lwip/icmp6.h>
+#include <lwip/nd6.h>
 
-#include "lwip/pbuf.h"
-#include "lwip/memp.h"
-#include "lwip/stats.h"
+#include <lwip/pbuf.h>
+#include <lwip/memp.h>
+#include <lwip/stats.h>
 
 #include <string.h>
 
@@ -79,7 +79,7 @@
  * track of the various fragments.
  */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct ip6_reass_helper {
@@ -89,7 +89,7 @@ struct ip6_reass_helper {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /* static variables */

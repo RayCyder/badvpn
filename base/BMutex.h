@@ -38,8 +38,8 @@
 #include <pthread.h>
 #endif
 
-#include "misc/debug.h"
-#include "base/DebugObject.h"
+#include <misc/debug.h>
+#include <base/DebugObject.h>
 
 typedef struct {
 #if BADVPN_THREAD_SAFE

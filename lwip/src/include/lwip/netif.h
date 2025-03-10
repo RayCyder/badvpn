@@ -32,17 +32,17 @@
 #ifndef __LWIP_NETIF_H__
 #define __LWIP_NETIF_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #define ENABLE_LOOPBACK (LWIP_NETIF_LOOPBACK || LWIP_HAVE_LOOPIF)
 
-#include "lwip/err.h"
+#include <lwip/err.h>
 
-#include "lwip/ip_addr.h"
-#include "lwip/ip6_addr.h"
+#include <lwip/ip_addr.h>
+#include <lwip/ip6_addr.h>
 
-#include "lwip/def.h"
-#include "lwip/pbuf.h"
+#include <lwip/def.h>
+#include <lwip/pbuf.h>
 #if LWIP_DHCP
 struct dhcp;
 #endif
@@ -50,7 +50,7 @@ struct dhcp;
 struct autoip;
 #endif
 #if LWIP_IPV6_DHCP6
-#include "lwip/dhcp6.h"
+#include <lwip/dhcp6.h>
 #endif /* LWIP_IPV6_DHCP6 */
 
 #ifdef __cplusplus

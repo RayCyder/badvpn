@@ -53,15 +53,15 @@
  *
  */
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if !MEM_LIBC_MALLOC /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/def.h"
-#include "lwip/mem.h"
-#include "lwip/sys.h"
-#include "lwip/stats.h"
-#include "lwip/err.h"
+#include <lwip/def.h>
+#include <lwip/mem.h>
+#include <lwip/sys.h>
+#include <lwip/stats.h>
+#include <lwip/err.h>
 
 #include <string.h>
 

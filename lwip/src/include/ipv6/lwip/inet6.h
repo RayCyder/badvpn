@@ -41,12 +41,12 @@
 #ifndef __LWIP_INET6_H__
 #define __LWIP_INET6_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6 && LWIP_SOCKET /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/ip6_addr.h"
-#include "lwip/def.h"
+#include <lwip/ip6_addr.h>
+#include <lwip/def.h>
 
 #ifdef __cplusplus
 extern "C" {

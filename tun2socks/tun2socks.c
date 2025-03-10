@@ -32,44 +32,44 @@
 #include <string.h>
 #include <limits.h>
 
-#include "misc/version.h"
-#include "misc/loggers_string.h"
-#include "misc/loglevel.h"
-#include "misc/minmax.h"
-#include "misc/offset.h"
-#include "misc/dead.h"
-#include "misc/ipv4_proto.h"
-#include "misc/ipv6_proto.h"
-#include "misc/udp_proto.h"
-#include "misc/byteorder.h"
-#include "misc/balloc.h"
-#include "misc/open_standard_streams.h"
-#include "misc/read_file.h"
-#include "misc/ipaddr6.h"
-#include "misc/concat_strings.h"
-#include "structure/LinkedList1.h"
-#include "base/BLog.h"
-#include "system/BReactor.h"
-#include "system/BSignal.h"
-#include "system/BAddr.h"
-#include "system/BNetwork.h"
-#include "flow/SinglePacketBuffer.h"
-#include "socksclient/BSocksClient.h"
-#include "tuntap/BTap.h"
-#include "lwip/init.h"
-#include "lwip/tcp_impl.h"
-#include "lwip/netif.h"
-#include "lwip/tcp.h"
-#include "tun2socks/SocksUdpGwClient.h"
-#include "socks_udp_client/SocksUdpClient.h"
+#include <misc/version.h>
+#include <misc/loggers_string.h>
+#include <misc/loglevel.h>
+#include <misc/minmax.h>
+#include <misc/offset.h>
+#include <misc/dead.h>
+#include <misc/ipv4_proto.h>
+#include <misc/ipv6_proto.h>
+#include <misc/udp_proto.h>
+#include <misc/byteorder.h>
+#include <misc/balloc.h>
+#include <misc/open_standard_streams.h>
+#include <misc/read_file.h>
+#include <misc/ipaddr6.h>
+#include <misc/concat_strings.h>
+#include <structure/LinkedList1.h>
+#include <base/BLog.h>
+#include <system/BReactor.h>
+#include <system/BSignal.h>
+#include <system/BAddr.h>
+#include <system/BNetwork.h>
+#include <flow/SinglePacketBuffer.h>
+#include <socksclient/BSocksClient.h>
+#include <tuntap/BTap.h>
+#include <lwip/init.h>
+#include <lwip/tcp_impl.h>
+#include <lwip/netif.h>
+#include <lwip/tcp.h>
+#include <tun2socks/SocksUdpGwClient.h>
+#include <socks_udp_client/SocksUdpClient.h>
 //#include <Foundation/Foundation.h>
 #ifndef BADVPN_USE_WINAPI
-#include "base/BLog_syslog.h"
+#include <base/BLog_syslog.h>
 #endif
 
-#include "tun2socks/tun2socks.h"
+#include <tun2socks/tun2socks.h>
 
-#include "generated/blog_channel_tun2socks.h"
+#include <generated/blog_channel_tun2socks.h>
 
 #define LOGGER_STDOUT 1
 #define LOGGER_SYSLOG 2

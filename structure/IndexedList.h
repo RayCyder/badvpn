@@ -46,7 +46,7 @@ typedef struct IndexedListNode_s IndexedListNode;
 
 typedef IndexedListNode *IndexedList__tree_link;
 
-#include "IndexedList_tree.h"
+#include <IndexedList_tree.h>
 #include <structure/CAvl_decl.h>
 
 struct IndexedList_s {
@@ -146,7 +146,7 @@ static IndexedListNode * IndexedList_GetNext (IndexedList *o, IndexedListNode *n
  */
 static IndexedListNode * IndexedList_GetPrev (IndexedList *o, IndexedListNode *node);
 
-#include "IndexedList_tree.h"
+#include <IndexedList_tree.h>
 #include <structure/CAvl_impl.h>
 
 static IndexedListNode * IndexedList__deref (IndexedList__TreeRef ref)

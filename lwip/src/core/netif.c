@@ -36,35 +36,35 @@
  *
  */
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
-#include "lwip/def.h"
-#include "lwip/ip_addr.h"
-#include "lwip/ip6_addr.h"
-#include "lwip/netif.h"
-#include "lwip/tcp_impl.h"
-#include "lwip/snmp.h"
-#include "lwip/igmp.h"
-#include "netif/etharp.h"
-#include "lwip/stats.h"
+#include <lwip/def.h>
+#include <lwip/ip_addr.h>
+#include <lwip/ip6_addr.h>
+#include <lwip/netif.h>
+#include <lwip/tcp_impl.h>
+#include <lwip/snmp.h>
+#include <lwip/igmp.h>
+#include <netif/etharp.h>
+#include <lwip/stats.h>
 #if ENABLE_LOOPBACK
-#include "lwip/sys.h"
+#include <lwip/sys.h>
 #if LWIP_NETIF_LOOPBACK_MULTITHREADING
-#include "lwip/tcpip.h"
+#include <lwip/tcpip.h>
 #endif /* LWIP_NETIF_LOOPBACK_MULTITHREADING */
 #endif /* ENABLE_LOOPBACK */
 
 #if LWIP_AUTOIP
-#include "lwip/autoip.h"
+#include <lwip/autoip.h>
 #endif /* LWIP_AUTOIP */
 #if LWIP_DHCP
-#include "lwip/dhcp.h"
+#include <lwip/dhcp.h>
 #endif /* LWIP_DHCP */
 #if LWIP_IPV6_DHCP6
-#include "lwip/dhcp6.h"
+#include <lwip/dhcp6.h>
 #endif /* LWIP_IPV6_DHCP6 */
 #if LWIP_IPV6_MLD
-#include "lwip/mld6.h"
+#include <lwip/mld6.h>
 #endif /* LWIP_IPV6_MLD */
 
 #if LWIP_NETIF_STATUS_CALLBACK

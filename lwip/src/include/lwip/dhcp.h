@@ -4,12 +4,12 @@
 #ifndef __LWIP_DHCP_H__
 #define __LWIP_DHCP_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_DHCP /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/netif.h"
-#include "lwip/udp.h"
+#include <lwip/netif.h>
+#include <lwip/udp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,7 +67,7 @@ struct dhcp
 
 /* MUST be compiled with "pack structs" or equivalent! */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 /** minimum set of fields of any DHCP message */
@@ -102,7 +102,7 @@ struct dhcp_msg
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 void dhcp_set_struct(struct netif *netif, struct dhcp *dhcp);

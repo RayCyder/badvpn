@@ -40,25 +40,25 @@
  */
 
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6  /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/def.h"
-#include "lwip/mem.h"
-#include "lwip/netif.h"
-#include "lwip/ip6.h"
-#include "lwip/ip6_addr.h"
-#include "lwip/ip6_frag.h"
-#include "lwip/icmp6.h"
-#include "lwip/raw.h"
-#include "lwip/udp.h"
-#include "lwip/tcp_impl.h"
-#include "lwip/dhcp6.h"
-#include "lwip/nd6.h"
-#include "lwip/mld6.h"
-#include "lwip/debug.h"
-#include "lwip/stats.h"
+#include <lwip/def.h>
+#include <lwip/mem.h>
+#include <lwip/netif.h>
+#include <lwip/ip6.h>
+#include <lwip/ip6_addr.h>
+#include <lwip/ip6_frag.h>
+#include <lwip/icmp6.h>
+#include <lwip/raw.h>
+#include <lwip/udp.h>
+#include <lwip/tcp_impl.h>
+#include <lwip/dhcp6.h>
+#include <lwip/nd6.h>
+#include <lwip/mld6.h>
+#include <lwip/debug.h>
+#include <lwip/stats.h>
 
 
 /**

@@ -42,7 +42,7 @@
 #ifndef __LWIP_IP6_ADDR_H__
 #define __LWIP_IP6_ADDR_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6  /* don't build if not configured for use in lwipopts.h */
 
@@ -61,7 +61,7 @@ struct ip6_addr {
 /* This is the packed version of ip6_addr_t,
    used in network headers that are itself packed */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct ip6_addr_packed {
@@ -69,7 +69,7 @@ struct ip6_addr_packed {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** ip6_addr_t uses a struct for convenience only, so that the same defines can

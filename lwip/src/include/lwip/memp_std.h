@@ -121,7 +121,7 @@ LWIP_PBUF_MEMPOOL(PBUF_POOL, PBUF_POOL_SIZE,           PBUF_POOL_BUFSIZE,       
  * since the default is to NOT look for lwippools.h
  */
 #if MEMP_USE_CUSTOM_POOLS
-#include "lwippools.h"
+#include <lwippools.h>
 #endif /* MEMP_USE_CUSTOM_POOLS */
 
 /*

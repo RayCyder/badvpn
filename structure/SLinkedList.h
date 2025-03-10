@@ -32,7 +32,7 @@
 
 #include <stddef.h>
 
-#include "misc/merge.h"
-#include "misc/debug.h"
+#include <misc/merge.h>
+#include <misc/debug.h>
 
 #endif

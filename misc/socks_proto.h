@@ -36,7 +36,7 @@
 
 #include <stdint.h>
 
-#include "misc/packed.h"
+#include <misc/packed.h>
 
 #define SOCKS_VERSION 0x05
 

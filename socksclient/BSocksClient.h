@@ -39,14 +39,14 @@
 #include <stdbool.h>
 
 
-#include "misc/debug.h"
-#include "misc/debugerror.h"
-#include "misc/socks_proto.h"
-#include "misc/packed.h"
-#include "base/DebugObject.h"
-#include "system/BConnection.h"
-#include "flow/PacketStreamSender.h"
-#include "base/BPending.h"
+#include <misc/debug.h>
+#include <misc/debugerror.h>
+#include <misc/socks_proto.h>
+#include <misc/packed.h>
+#include <base/DebugObject.h>
+#include <system/BConnection.h>
+#include <flow/PacketStreamSender.h>
+#include <base/BPending.h>
 
 
 #define BSOCKSCLIENT_EVENT_ERROR 1

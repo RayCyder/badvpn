@@ -32,7 +32,7 @@
 #ifndef __LWIP_ARCH_H__
 #define __LWIP_ARCH_H__
 
-#include "arch/cc.h"
+#include <arch/cc.h>
 
 /** Temporary: define format string for size_t if not defined in cc.h */
 #ifndef SZT_F

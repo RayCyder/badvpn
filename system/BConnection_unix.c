@@ -35,13 +35,13 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "misc/nonblocking.h"
-#include "misc/strdup.h"
-#include "base/BLog.h"
+#include <misc/nonblocking.h>
+#include <misc/strdup.h>
+#include <base/BLog.h>
 
-#include "BConnection.h"
+#include <BConnection.h>
 
-#include "generated/blog_channel_BConnection.h"
+#include <generated/blog_channel_BConnection.h>
 
 #define MAX_UNIX_SOCKET_PATH 200
 

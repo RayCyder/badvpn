@@ -37,9 +37,9 @@
 
 #include <stdint.h>
 
-#include "misc/debug.h"
-#include "base/DebugObject.h"
-#include "flow/PacketRecvInterface.h"
+#include <misc/debug.h>
+#include <base/DebugObject.h>
+#include <flow/PacketRecvInterface.h>
 
 /**
  * Object for writing packets to a {@link PacketRecvInterface} client

@@ -41,15 +41,15 @@
 #include <unistd.h>
 #endif
 
-#include "misc/debug.h"
-#include "misc/offset.h"
-#include "misc/balloc.h"
-#include "misc/compare.h"
-#include "base/BLog.h"
+#include <misc/debug.h>
+#include <misc/offset.h>
+#include <misc/balloc.h>
+#include <misc/compare.h>
+#include <base/BLog.h>
 
-#include "system/BReactor.h"
+#include <system/BReactor.h>
 
-#include "generated/blog_channel_BReactor.h"
+#include <generated/blog_channel_BReactor.h>
 
 #define KEVENT_TAG_FD 1
 #define KEVENT_TAG_KEVENT 2
@@ -68,8 +68,8 @@ static int compare_timers (BSmallTimer *t1, BSmallTimer *t2)
     return B_COMPARE((uintptr_t)t1, (uintptr_t)t2);
 }
 
-#include "BReactor_badvpn_timerstree.h"
-#include "structure/CAvl_impl.h"
+#include <BReactor_badvpn_timerstree.h>
+#include <structure/CAvl_impl.h>
 
 static void assert_timer (BSmallTimer *bt)
 {

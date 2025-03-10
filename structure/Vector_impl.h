@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Vector_header.h"
+#include <Vector_header.h>
 
 static int Vector_Init (Vector *o, size_t capacity)
 {
@@ -114,4 +114,4 @@ static VectorElem * Vector_Pop (Vector *o, size_t *out_index)
     return &o->elems[o->count];
 }
 
-#include "Vector_footer.h"
+#include <Vector_footer.h>

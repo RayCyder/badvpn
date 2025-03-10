@@ -41,17 +41,17 @@
 #ifndef __LWIP_IP6_H__
 #define __LWIP_IP6_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6  /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/ip.h"
-#include "lwip/ip6_addr.h"
-#include "lwip/def.h"
-#include "lwip/pbuf.h"
-#include "lwip/netif.h"
+#include <lwip/ip.h>
+#include <lwip/ip6_addr.h>
+#include <lwip/def.h>
+#include <lwip/pbuf.h>
+#include <lwip/netif.h>
 
-#include "lwip/err.h"
+#include <lwip/err.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,7 +73,7 @@ extern "C" {
 
 /* The IPv6 header. */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct ip6_hdr {
@@ -91,7 +91,7 @@ struct ip6_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /* Hop-by-hop router alert option. */
@@ -101,7 +101,7 @@ PACK_STRUCT_END
 #define IP6_ROUTER_ALERT_OPTION 5
 #define IP6_ROUTER_ALERT_VALUE_MLD 0
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct ip6_hbh_hdr {
@@ -122,7 +122,7 @@ struct ip6_hbh_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /* Fragment header. */
@@ -130,7 +130,7 @@ PACK_STRUCT_END
 #define IP6_FRAG_OFFSET_MASK    0xfff8
 #define IP6_FRAG_MORE_FLAG      0x0001
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct ip6_frag_hdr {
@@ -145,7 +145,7 @@ struct ip6_frag_hdr {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 #define IP6H_V(hdr)  ((ntohl((hdr)->_v_tc_fl) >> 28) & 0x0f)

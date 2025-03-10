@@ -39,8 +39,8 @@
 #include <stddef.h>
 #include <limits.h>
 
-#include "misc/memref.h"
-#include "misc/debug.h"
+#include <misc/memref.h>
+#include <misc/debug.h>
 
 // public parsing functions
 static int decode_decimal_digit (char c);

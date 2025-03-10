@@ -46,12 +46,12 @@
 #    include <net/ethernet.h>
 #endif
 
-#include "misc/nonblocking.h"
-#include "base/BLog.h"
+#include <misc/nonblocking.h>
+#include <base/BLog.h>
 
-#include "BDatagram.h"
+#include <BDatagram.h>
 
-#include "generated/blog_channel_BDatagram.h"
+#include <generated/blog_channel_BDatagram.h>
 
 struct sys_addr {
     socklen_t len;

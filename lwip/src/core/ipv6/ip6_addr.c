@@ -40,12 +40,12 @@
  * <delamer@inicotech.com>
  */
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6  /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/ip6_addr.h"
-#include "lwip/def.h"
+#include <lwip/ip6_addr.h>
+#include <lwip/def.h>
 
 /* used by IP6_ADDR_ANY in ip6_addr.h */
 const ip6_addr_t ip6_addr_any = { { 0ul, 0ul, 0ul, 0ul } };

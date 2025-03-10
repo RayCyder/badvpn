@@ -34,9 +34,9 @@
 #ifndef BADVPN_PACKETPASSINACTIVITYMONITOR_H
 #define BADVPN_PACKETPASSINACTIVITYMONITOR_H
 
-#include "base/DebugObject.h"
-#include "system/BReactor.h"
-#include "flow/PacketPassInterface.h"
+#include <base/DebugObject.h>
+#include <system/BReactor.h>
+#include <flow/PacketPassInterface.h>
 
 /**
  * Handler function invoked when inactivity is detected.

@@ -30,12 +30,12 @@
 #ifndef BADVPN_SYSTEM_BDATAGRAM
 #define BADVPN_SYSTEM_BDATAGRAM
 
-#include "misc/debug.h"
-#include "flow/PacketPassInterface.h"
-#include "flow/PacketRecvInterface.h"
-#include "system/BAddr.h"
-#include "system/BReactor.h"
-#include "system/BNetwork.h"
+#include <misc/debug.h>
+#include <flow/PacketPassInterface.h>
+#include <flow/PacketRecvInterface.h>
+#include <system/BAddr.h>
+#include <system/BReactor.h>
+#include <system/BNetwork.h>
 
 struct BDatagram_s;
 
@@ -225,9 +225,9 @@ void BDatagram_RecvAsync_Free (BDatagram *o);
 PacketRecvInterface * BDatagram_RecvAsync_GetIf (BDatagram *o);
 
 #ifdef BADVPN_USE_WINAPI
-#include "BDatagram_win.h"
+#include <BDatagram_win.h>
 #else
-#include "BDatagram_unix.h"
+#include <BDatagram_unix.h>
 #endif
 
 #endif

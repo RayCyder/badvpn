@@ -27,10 +27,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "SAvl_header.h"
+#include <SAvl_header.h>
 
-#include "SAvl_tree.h"
-#include "structure/CAvl_impl.h"
+#include <SAvl_tree.h>
+#include <structure/CAvl_impl.h>
 
 static void SAvl_Init (SAvl *o)
 {
@@ -161,4 +161,4 @@ static SAvlEntry * SAvl_GetAt (const SAvl *o, SAvlArg arg, SAvlCount index)
 
 #endif
 
-#include "SAvl_footer.h"
+#include <SAvl_footer.h>

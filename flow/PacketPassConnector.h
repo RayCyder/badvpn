@@ -37,8 +37,8 @@
 
 #include <stdint.h>
 
-#include "base/DebugObject.h"
-#include "flow/PacketPassInterface.h"
+#include <base/DebugObject.h>
+#include <flow/PacketPassInterface.h>
 
 /**
  * A {@link PacketPassInterface} layer which allows the output to be

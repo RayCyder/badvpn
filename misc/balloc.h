@@ -39,9 +39,9 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include "misc/debug.h"
-#include "misc/bsize.h"
-#include "misc/maxalign.h"
+#include <misc/debug.h>
+#include <misc/bsize.h>
+#include <misc/maxalign.h>
 
 /**
  * Allocates memory.

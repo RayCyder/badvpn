@@ -27,8 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "misc/debugerror.h"
-#include "base/DebugObject.h"
+#include <misc/debugerror.h>
+#include <base/DebugObject.h>
 
 #define BCONNECTION_SEND_LIMIT 2
 #define BCONNECTION_RECV_LIMIT 2

@@ -30,12 +30,12 @@
 #ifndef BADVPN_SYSTEM_BCONNECTION
 #define BADVPN_SYSTEM_BCONNECTION
 
-#include "misc/debug.h"
-#include "flow/StreamPassInterface.h"
-#include "flow/StreamRecvInterface.h"
-#include "system/BAddr.h"
-#include "system/BReactor.h"
-#include "system/BNetwork.h"
+#include <misc/debug.h>
+#include <flow/StreamPassInterface.h>
+#include <flow/StreamRecvInterface.h>
+#include <system/BAddr.h>
+#include <system/BReactor.h>
+#include <system/BNetwork.h>
 
 
 
@@ -429,9 +429,9 @@ StreamRecvInterface * BConnection_RecvAsync_GetIf (BConnection *o);
 
 
 #ifdef BADVPN_USE_WINAPI
-#include "BConnection_win.h"
+#include <BConnection_win.h>
 #else
-#include "BConnection_unix.h"
+#include <BConnection_unix.h>
 #endif
 
 #endif

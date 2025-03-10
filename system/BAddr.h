@@ -49,11 +49,11 @@
 #include <netinet/in.h>
 #endif
 
-#include "misc/byteorder.h"
-#include "misc/debug.h"
-#include "misc/print_macros.h"
-#include "misc/read_write_int.h"
-#include "misc/compare.h"
+#include <misc/byteorder.h>
+#include <misc/debug.h>
+#include <misc/print_macros.h>
+#include <misc/read_write_int.h>
+#include <misc/compare.h>
 
 #define BADDR_TYPE_NONE 0
 #define BADDR_TYPE_IPV4 1

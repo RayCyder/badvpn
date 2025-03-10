@@ -26,16 +26,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "misc/debug.h"
-#include "base/BLog.h"
+#include <misc/debug.h>
+#include <base/BLog.h>
 
-#include "tun2socks/SocksUdpGwClient.h"
+#include <tun2socks/SocksUdpGwClient.h>
 
-#include "generated/blog_channel_SocksUdpGwClient.h"
+#include <generated/blog_channel_SocksUdpGwClient.h>
 
 #ifdef BADVPN_SOCKS_UDP_RELAY
 
-#include "misc/socks_proto.h"
+#include <misc/socks_proto.h>
 #define CONNECTION_UDP_BUFFER_SIZE 1
 
 #else

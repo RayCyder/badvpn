@@ -38,13 +38,13 @@
 #include <sys/signalfd.h>
 #endif
 
-#include "misc/balloc.h"
-#include "misc/nonblocking.h"
-#include "base/BLog.h"
+#include <misc/balloc.h>
+#include <misc/nonblocking.h>
+#include <base/BLog.h>
 
-#include "system/BUnixSignal.h"
+#include <system/BUnixSignal.h>
 
-#include "generated/blog_channel_BUnixSignal.h"
+#include <generated/blog_channel_BUnixSignal.h>
 
 #define BUNIXSIGNAL_MAX_SIGNALS 64
 

@@ -38,29 +38,29 @@
  *
  */
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
-#include "lwip/memp.h"
-#include "lwip/pbuf.h"
-#include "lwip/udp.h"
-#include "lwip/raw.h"
-#include "lwip/tcp_impl.h"
-#include "lwip/igmp.h"
-#include "lwip/api.h"
-#include "lwip/api_msg.h"
-#include "lwip/tcpip.h"
-#include "lwip/sys.h"
-#include "lwip/timers.h"
-#include "lwip/stats.h"
-#include "netif/etharp.h"
-#include "lwip/ip_frag.h"
-#include "lwip/snmp_structs.h"
-#include "lwip/snmp_msg.h"
-#include "lwip/dns.h"
-#include "netif/ppp_oe.h"
-#include "lwip/nd6.h"
-#include "lwip/ip6_frag.h"
-#include "lwip/mld6.h"
+#include <lwip/memp.h>
+#include <lwip/pbuf.h>
+#include <lwip/udp.h>
+#include <lwip/raw.h>
+#include <lwip/tcp_impl.h>
+#include <lwip/igmp.h>
+#include <lwip/api.h>
+#include <lwip/api_msg.h>
+#include <lwip/tcpip.h>
+#include <lwip/sys.h>
+#include <lwip/timers.h>
+#include <lwip/stats.h>
+#include <netif/etharp.h>
+#include <lwip/ip_frag.h>
+#include <lwip/snmp_structs.h>
+#include <lwip/snmp_msg.h>
+#include <lwip/dns.h>
+#include <netif/ppp_oe.h>
+#include <lwip/nd6.h>
+#include <lwip/ip6_frag.h>
+#include <lwip/mld6.h>
 
 #include <string.h>
 
@@ -131,7 +131,7 @@ static
 #endif
 const u16_t memp_sizes[MEMP_MAX] = {
 #define LWIP_MEMPOOL(name,num,size,desc)  LWIP_MEM_ALIGN_SIZE(size),
-#include "lwip/memp_std.h"
+#include <lwip/memp_std.h>
 };
 
 #if !MEMP_MEM_MALLOC /* don't build if not configured for use in lwipopts.h */
@@ -139,14 +139,14 @@ const u16_t memp_sizes[MEMP_MAX] = {
 /** This array holds the number of elements in each pool. */
 static const u16_t memp_num[MEMP_MAX] = {
 #define LWIP_MEMPOOL(name,num,size,desc)  (num),
-#include "lwip/memp_std.h"
+#include <lwip/memp_std.h>
 };
 
 /** This array holds a textual description of each pool. */
 #ifdef LWIP_DEBUG
 static const char *memp_desc[MEMP_MAX] = {
 #define LWIP_MEMPOOL(name,num,size,desc)  (desc),
-#include "lwip/memp_std.h"
+#include <lwip/memp_std.h>
 };
 #endif /* LWIP_DEBUG */
 
@@ -159,12 +159,12 @@ static const char *memp_desc[MEMP_MAX] = {
  */
 #define LWIP_MEMPOOL(name,num,size,desc) u8_t memp_memory_ ## name ## _base \
   [((num) * (MEMP_SIZE + MEMP_ALIGN_SIZE(size)))];   
-#include "lwip/memp_std.h"
+#include <lwip/memp_std.h>
 
 /** This array holds the base of each memory pool. */
 static u8_t *const memp_bases[] = { 
 #define LWIP_MEMPOOL(name,num,size,desc) memp_memory_ ## name ## _base,   
-#include "lwip/memp_std.h"
+#include <lwip/memp_std.h>
 };
 
 #else /* MEMP_SEPARATE_POOLS */
@@ -172,7 +172,7 @@ static u8_t *const memp_bases[] = {
 /** This is the actual memory used by the pools (all pools in one big block). */
 static u8_t memp_memory[MEM_ALIGNMENT - 1 
 #define LWIP_MEMPOOL(name,num,size,desc) + ( (num) * (MEMP_SIZE + MEMP_ALIGN_SIZE(size) ) )
-#include "lwip/memp_std.h"
+#include <lwip/memp_std.h>
 ];
 
 #endif /* MEMP_SEPARATE_POOLS */
@@ -205,7 +205,7 @@ memp_sanity(void)
 #if defined(LWIP_DEBUG) && MEMP_STATS
 static const char * memp_overflow_names[] = {
 #define LWIP_MEMPOOL(name,num,size,desc) "/"desc,
-#include "lwip/memp_std.h"
+#include <lwip/memp_std.h>
   };
 #endif
 

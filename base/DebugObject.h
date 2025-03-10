@@ -44,8 +44,8 @@
 #include <pthread.h>
 #endif
 
-#include "misc/debug.h"
-#include "misc/debugcounter.h"
+#include <misc/debug.h>
+#include <misc/debugcounter.h>
 
 #define DEBUGOBJECT_VALID UINT32_C(0x31415926)
 

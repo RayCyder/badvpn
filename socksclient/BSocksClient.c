@@ -29,13 +29,13 @@
 
 #include <string.h>
 
-#include "misc/byteorder.h"
-#include "misc/balloc.h"
-#include "base/BLog.h"
+#include <misc/byteorder.h>
+#include <misc/balloc.h>
+#include <base/BLog.h>
 
-#include "socksclient/BSocksClient.h"
+#include <socksclient/BSocksClient.h>
 
-#include "generated/blog_channel_BSocksClient.h"
+#include <generated/blog_channel_BSocksClient.h>
 
 
 #ifdef __APPLE__

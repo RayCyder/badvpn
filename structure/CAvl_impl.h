@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CAvl_header.h"
+#include <CAvl_header.h>
 
 static CAvlLink CAvl_nulllink (void)
 {
@@ -946,4 +946,4 @@ static CAvlRef CAvl_FindLastExclusiveAssocPrefixSumLesserEqual (const CAvl *o, C
 
 #endif
 
-#include "CAvl_footer.h"
+#include <CAvl_footer.h>

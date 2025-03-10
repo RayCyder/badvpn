@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "DebugObject.h"
+#include <DebugObject.h>
 
 #ifndef BADVPN_PLUGIN
 #ifndef NDEBUG

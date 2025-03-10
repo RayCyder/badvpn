@@ -44,14 +44,14 @@
 #ifndef __LWIP_ND6_H__
 #define __LWIP_ND6_H__
 
-#include "lwip/opt.h"
+#include <lwip/opt.h>
 
 #if LWIP_IPV6  /* don't build if not configured for use in lwipopts.h */
 
-#include "lwip/pbuf.h"
-#include "lwip/ip6.h"
-#include "lwip/ip6_addr.h"
-#include "lwip/netif.h"
+#include <lwip/pbuf.h>
+#include <lwip/ip6.h>
+#include <lwip/ip6_addr.h>
+#include <lwip/netif.h>
 
 
 #ifdef __cplusplus
@@ -128,7 +128,7 @@ struct nd6_q_entry {
 
 /** Neighbor solicitation message header. */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct ns_header {
@@ -141,12 +141,12 @@ struct ns_header {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** Neighbor advertisement message header. */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct na_header {
@@ -160,7 +160,7 @@ struct na_header {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 #define ND6_FLAG_ROUTER      (0x80)
 #define ND6_FLAG_SOLICITED   (0x40)
@@ -168,7 +168,7 @@ PACK_STRUCT_END
 
 /** Router solicitation message header. */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct rs_header {
@@ -180,7 +180,7 @@ struct rs_header {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** Router advertisement message header. */
@@ -193,7 +193,7 @@ PACK_STRUCT_END
 #define ND6_RA_PREFERENCE_LOW (0x18)
 #define ND6_RA_PREFERENCE_DISABLED (0x10)
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct ra_header {
@@ -209,12 +209,12 @@ struct ra_header {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** Redirect message header. */
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct redirect_header {
@@ -228,14 +228,14 @@ struct redirect_header {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** Link-layer address option. */
 #define ND6_OPTION_TYPE_SOURCE_LLADDR (0x01)
 #define ND6_OPTION_TYPE_TARGET_LLADDR (0x02)
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct lladdr_option {
@@ -245,7 +245,7 @@ struct lladdr_option {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** Prefix information option. */
@@ -255,7 +255,7 @@ PACK_STRUCT_END
 #define ND6_PREFIX_FLAG_ROUTER_ADDRESS (0x20)
 #define ND6_PREFIX_FLAG_SITE_PREFIX (0x10)
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct prefix_option {
@@ -271,13 +271,13 @@ struct prefix_option {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** Redirected header option. */
 #define ND6_OPTION_TYPE_REDIR_HDR (0x04)
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct redirected_header_option {
@@ -289,13 +289,13 @@ struct redirected_header_option {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** MTU option. */
 #define ND6_OPTION_TYPE_MTU (0x05)
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct mtu_option {
@@ -306,13 +306,13 @@ struct mtu_option {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /** Route information option. */
 #define ND6_OPTION_TYPE_ROUTE_INFO (24)
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#  include <arch/bpstruct.h>
 #endif
 PACK_STRUCT_BEGIN
 struct route_option {
@@ -325,7 +325,7 @@ struct route_option {
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#  include <arch/epstruct.h>
 #endif
 
 /* the possible states of an IP address */

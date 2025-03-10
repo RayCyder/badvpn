@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Vector_header.h"
+#include <Vector_header.h>
 
 typedef struct {
     VectorElem *elems;
@@ -43,4 +43,4 @@ static int Vector_Reserve (Vector *o, size_t capacity) WARN_UNUSED;
 static VectorElem * Vector_Push (Vector *o, size_t *out_index) WARN_UNUSED;
 static VectorElem * Vector_Pop (Vector *o, size_t *out_index);
 
-#include "Vector_footer.h"
+#include <Vector_footer.h>

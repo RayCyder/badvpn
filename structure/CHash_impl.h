@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CHash_header.h"
+#include <CHash_header.h>
 
 static void CHash_assert_valid_entry (CHashArg arg, CHashRef entry)
 {
@@ -309,4 +309,4 @@ static void CHash_Verify (const CHash *o, CHashArg arg)
     }
 }
 
-#include "CHash_footer.h"
+#include <CHash_footer.h>
