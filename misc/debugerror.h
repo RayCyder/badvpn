@@ -35,8 +35,8 @@
 #ifndef BADVPN_MISC_DEBUGERROR_H
 #define BADVPN_MISC_DEBUGERROR_H
 
-#include <misc/debug.h>
-#include <base/BPending.h>
+#include "misc/debug.h"
+#include "base/BPending.h"
 
 #ifndef NDEBUG
     #define DEBUGERROR(de, call) \
@@ -52,8 +52,6 @@
 typedef struct {
     #ifndef NDEBUG
     BPending job;
-    #else
-    int dummy_field; // struct must have at least one field
     #endif
 } DebugError;
 

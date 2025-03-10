@@ -32,48 +32,44 @@
 #include <string.h>
 #include <limits.h>
 
-#include <misc/version.h>
-#include <misc/loggers_string.h>
-#include <misc/loglevel.h>
-#include <misc/minmax.h>
-#include <misc/offset.h>
-#include <misc/dead.h>
-#include <misc/ipv4_proto.h>
-#include <misc/ipv6_proto.h>
-#include <misc/udp_proto.h>
-#include <misc/byteorder.h>
-#include <misc/balloc.h>
-#include <misc/open_standard_streams.h>
-#include <misc/read_file.h>
-#include <misc/ipaddr6.h>
-#include <misc/concat_strings.h>
-#include <structure/LinkedList1.h>
-#include <base/BLog.h>
-#include <system/BReactor.h>
-#include <system/BSignal.h>
-#include <system/BAddr.h>
-#include <system/BNetwork.h>
-#include <flow/SinglePacketBuffer.h>
-#include <socksclient/BSocksClient.h>
-#include <tuntap/BTap.h>
-#include <lwip/init.h>
-#include <lwip/ip_addr.h>
-#include <lwip/priv/tcp_priv.h>
-#include <lwip/netif.h>
-#include <lwip/tcp.h>
-#include <lwip/ip4_frag.h>
-#include <lwip/nd6.h>
-#include <lwip/ip6_frag.h>
-#include <tun2socks/SocksUdpGwClient.h>
-#include <socks_udp_client/SocksUdpClient.h>
-
+#include "misc/version.h"
+#include "misc/loggers_string.h"
+#include "misc/loglevel.h"
+#include "misc/minmax.h"
+#include "misc/offset.h"
+#include "misc/dead.h"
+#include "misc/ipv4_proto.h"
+#include "misc/ipv6_proto.h"
+#include "misc/udp_proto.h"
+#include "misc/byteorder.h"
+#include "misc/balloc.h"
+#include "misc/open_standard_streams.h"
+#include "misc/read_file.h"
+#include "misc/ipaddr6.h"
+#include "misc/concat_strings.h"
+#include "structure/LinkedList1.h"
+#include "base/BLog.h"
+#include "system/BReactor.h"
+#include "system/BSignal.h"
+#include "system/BAddr.h"
+#include "system/BNetwork.h"
+#include "flow/SinglePacketBuffer.h"
+#include "socksclient/BSocksClient.h"
+#include "tuntap/BTap.h"
+#include "lwip/init.h"
+#include "lwip/tcp_impl.h"
+#include "lwip/netif.h"
+#include "lwip/tcp.h"
+#include "tun2socks/SocksUdpGwClient.h"
+#include "socks_udp_client/SocksUdpClient.h"
+//#include <Foundation/Foundation.h>
 #ifndef BADVPN_USE_WINAPI
-#include <base/BLog_syslog.h>
+#include "base/BLog_syslog.h"
 #endif
 
-#include <tun2socks/tun2socks.h>
+#include "tun2socks/tun2socks.h"
 
-#include <generated/blog_channel_tun2socks.h>
+#include "generated/blog_channel_tun2socks.h"
 
 #define LOGGER_STDOUT 1
 #define LOGGER_SYSLOG 2
@@ -103,7 +99,8 @@ struct {
     #endif
     int loglevel;
     int loglevels[BLOG_NUM_CHANNELS];
-    char *tundev;
+    int fd;
+    int mtu;
     char *netif_ipaddr;
     char *netif_netmask;
     char *netif_ip6addr;
@@ -121,8 +118,8 @@ struct {
 
 // TCP client
 struct tcp_client {
-    int aborted;
-    dead_t dead_aborted;
+    dead_t dead;
+    dead_t dead_client;
     LinkedList1Node list_node;
     BAddr local_addr;
     BAddr remote_addr;
@@ -194,7 +191,6 @@ SocksUdpClient socks_udp_client;
 
 // TCP timer
 BTimer tcp_timer;
-int tcp_timer_mod4;
 
 // job for initializing lwip
 BPending lwip_init_job;
@@ -221,15 +217,15 @@ static void print_version (void);
 static int parse_arguments (int argc, char *argv[]);
 static int process_arguments (void);
 static void signal_handler (void *unused);
-static BAddr baddr_from_lwip (const ip_addr_t *ip_addr, uint16_t port_hostorder);
+static BAddr baddr_from_lwip (int is_ipv6, const ipX_addr_t *ipx_addr, uint16_t port_hostorder);
 static void lwip_init_job_hadler (void *unused);
 static void tcp_timer_handler (void *unused);
 static void device_error_handler (void *unused);
 static void device_read_handler_send (void *unused, uint8_t *data, int data_len);
 static int process_device_udp_packet (uint8_t *data, int data_len);
 static err_t netif_init_func (struct netif *netif);
-static err_t netif_output_func (struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr);
-static err_t netif_output_ip6_func (struct netif *netif, struct pbuf *p, const ip6_addr_t *ipaddr);
+static err_t netif_output_func (struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr);
+//static err_t netif_output_ip6_func (struct netif *netif, struct pbuf *p, ip6_addr_t *ipaddr);
 static err_t common_netif_output (struct netif *netif, struct pbuf *p);
 static err_t netif_input_func (struct pbuf *p, struct netif *inp);
 static void client_logfunc (struct tcp_client *client);
@@ -238,7 +234,6 @@ static err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
 static void client_handle_freed_client (struct tcp_client *client);
 static void client_free_client (struct tcp_client *client);
 static void client_abort_client (struct tcp_client *client);
-static void client_abort_pcb (struct tcp_client *client);
 static void client_free_socks (struct tcp_client *client);
 static void client_murder (struct tcp_client *client);
 static void client_dealloc (struct tcp_client *client);
@@ -251,9 +246,10 @@ static void client_socks_recv_initiate (struct tcp_client *client);
 static void client_socks_recv_handler_done (struct tcp_client *client, int data_len);
 static int client_socks_recv_send_out (struct tcp_client *client);
 static err_t client_sent_func (void *arg, struct tcp_pcb *tpcb, u16_t len);
+//static void udpgw_client_handler_received (void *unused, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len);
 static void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len);
 
-int tun2socks_main (int argc, char **argv)
+int tun2socks_main (int argc, char **argv, int fd, int mtu)
 {
     if (argc <= 0) {
         return 1;
@@ -269,6 +265,8 @@ int tun2socks_main (int argc, char **argv)
         goto fail0;
     }
     
+    options.fd = fd;
+    options.mtu = mtu;
     // handle --help and --version
     if (options.help) {
         print_version();
@@ -293,8 +291,8 @@ int tun2socks_main (int argc, char **argv)
             }
             break;
         #endif
-        default:
-            ASSERT(0);
+//        default:
+//            ASSERT(0);
     }
     
     // configure logger channels
@@ -336,16 +334,23 @@ int tun2socks_main (int argc, char **argv)
     // set not quitting
     quitting = 0;
     
-    // setup signal handler
-    if (!BSignal_Init(&ss, signal_handler, NULL)) {
-        BLog(BLOG_ERROR, "BSignal_Init failed");
-        goto fail2;
-    }
+//    // setup signal handler
+//    if (!BSignal_Init(&ss, signal_handler, NULL)) {
+//        BLog(BLOG_ERROR, "BSignal_Init failed");
+//        goto fail2;
+//    }
     
+    struct BTap_init_data init_data;
+    init_data.dev_type = BTAP_DEV_TUN ;
+    init_data.init_type = BTAP_INIT_FD;
+    init_data.init.fd.fd = fd;
+    init_data.init.fd.mtu = mtu;
+    
+    if (!BTap_Init2(&device, &ss, init_data, device_error_handler, NULL)) {
     // init TUN device
-    if (!BTap_Init(&device, &ss, options.tundev, device_error_handler, NULL, 1)) {
+//    if (!BTap_Init(&device, &ss, options.fd, options.mtu, device_error_handler, NULL, 1)) {
         BLog(BLOG_ERROR, "BTap_Init failed");
-        goto fail3;
+        goto fail2;
     }
     
     // NOTE: the order of the following is important:
@@ -359,23 +364,21 @@ int tun2socks_main (int argc, char **argv)
         BLog(BLOG_ERROR, "SinglePacketBuffer_Init failed");
         goto fail4;
     }
-    
     // Compute the largest possible UDP payload that we can receive from or send to the
     // TUN device.
-    udp_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv4_header) + sizeof(struct udp_header));
+     udp_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv4_header) + sizeof(struct udp_header));
     if (options.netif_ip6addr) {
         int udp_ip6_mtu = BTap_GetMTU(&device) - (int)(sizeof(struct ipv6_header) + sizeof(struct udp_header));
         if (udp_mtu < udp_ip6_mtu) {
             udp_mtu = udp_ip6_mtu;
         }
+        if (udp_mtu < 0) {
+            udp_mtu = 0;
+        }
     }
-    if (udp_mtu < 0) {
-        udp_mtu = 0;
-    }
-
+    
     if (options.udpgw_remote_server_addr) {
         udp_mode = UdpModeUdpgw;
-
         // make sure our UDP payloads aren't too large for udpgw
         int udpgw_mtu = udpgw_compute_mtu(udp_mtu);
         if (udpgw_mtu < 0 || udpgw_mtu > PACKETPROTO_MAXPAYLOAD) {
@@ -384,22 +387,21 @@ int tun2socks_main (int argc, char **argv)
         }
         
         // init udpgw client
-        if (!SocksUdpGwClient_Init(&udpgw_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS,
-            options.udpgw_connection_buffer_size, UDPGW_KEEPALIVE_TIME, socks_server_addr,
-            socks_auth_info, socks_num_auth_info, udpgw_remote_server_addr,
-            UDPGW_RECONNECT_TIME, &ss, NULL, udp_send_packet_to_device))
-        {
+        if (!SocksUdpGwClient_Init(&udpgw_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS, options.udpgw_connection_buffer_size, UDPGW_KEEPALIVE_TIME, socks_server_addr, socks_auth_info, socks_num_auth_info, udpgw_remote_server_addr, UDPGW_RECONNECT_TIME, &ss, NULL, udp_send_packet_to_device)) {
             BLog(BLOG_ERROR, "SocksUdpGwClient_Init failed");
             goto fail4a;
         }
-    } else if (options.socks5_udp) {
-        udp_mode = UdpModeSocks;
 
-        // init SOCKS UDP client
-        SocksUdpClient_Init(&socks_udp_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS,
-            SOCKS_UDP_SEND_BUFFER_PACKETS, UDPGW_KEEPALIVE_TIME, socks_server_addr,
-            socks_auth_info, socks_num_auth_info, &ss, NULL, udp_send_packet_to_device);
-    } else {
+    }
+    else if(options.socks5_udp)
+    {
+        udp_mode = UdpModeSocks;
+        SocksUdpClient_Init(&socks_udp_client, udp_mtu, DEFAULT_UDPGW_MAX_CONNECTIONS,SOCKS_UDP_SEND_BUFFER_PACKETS,
+                                   UDPGW_KEEPALIVE_TIME, socks_server_addr, socks_auth_info,
+                                   socks_num_auth_info, &ss, NULL, udp_send_packet_to_device);
+    }
+    else
+    {
         udp_mode = UdpModeNone;
     }
     
@@ -417,7 +419,6 @@ int tun2socks_main (int argc, char **argv)
     // it won't trigger before lwip is initialized, becuase the lwip init is a job
     BTimer_Init(&tcp_timer, TCP_TMR_INTERVAL, tcp_timer_handler, NULL);
     BReactor_SetTimer(&ss, &tcp_timer);
-    tcp_timer_mod4 = 0;
     
     // set no netif
     have_netif = 0;
@@ -438,7 +439,7 @@ int tun2socks_main (int argc, char **argv)
     
     // free clients
     LinkedList1Node *node;
-    while (node = LinkedList1_GetFirst(&tcp_clients)) {
+    while ((node = LinkedList1_GetFirst(&tcp_clients)) != NULL) {
         struct tcp_client *client = UPPER_OBJECT(node, struct tcp_client, list_node);
         client_murder(client);
     }
@@ -462,7 +463,9 @@ fail5:
     BPending_Free(&lwip_init_job);
     if (udp_mode == UdpModeUdpgw) {
         SocksUdpGwClient_Free(&udpgw_client);
-    } else if (udp_mode == UdpModeSocks) {
+    }
+    else if(udp_mode == UdpModeSocks)
+    {
         SocksUdpClient_Free(&socks_udp_client);
     }
 fail4a:
@@ -470,8 +473,8 @@ fail4a:
 fail4:
     PacketPassInterface_Free(&device_read_interface);
     BTap_Free(&device);
-fail3:
-    BSignal_Finish();
+//fail3:
+//    BSignal_Finish();
 fail2:
     BReactor_Free(&ss);
 fail1:
@@ -482,6 +485,10 @@ fail0:
     DebugObjectGlobal_Finish();
     
     return 1;
+}
+
+void stop_tun2socks() {
+    terminate();
 }
 
 void terminate (void)
@@ -522,11 +529,16 @@ void print_help (const char *name)
         "        [--password <password>]\n"
         "        [--password-file <file>]\n"
         "        [--append-source-to-username]\n"
+#ifdef BADVPN_SOCKS_UDP_RELAY
+        "        [--enable-udprelay]\n"
+        "        [--udprelay-max-connections <number>]\n"
+#else
         "        [--udpgw-remote-server-addr <addr>]\n"
         "        [--udpgw-max-connections <number>]\n"
         "        [--udpgw-connection-buffer-size <number>]\n"
         "        [--udpgw-transparent-dns]\n"
         "        [--socks5-udp]\n"
+#endif
         "Address format is a.b.c.d:port (IPv4) or [addr]:port (IPv6).\n",
         name
     );
@@ -554,7 +566,8 @@ int parse_arguments (int argc, char *argv[])
     for (int i = 0; i < BLOG_NUM_CHANNELS; i++) {
         options.loglevels[i] = -1;
     }
-    options.tundev = NULL;
+    options.fd = 0;
+    options.mtu = 4096;
     options.netif_ipaddr = NULL;
     options.netif_netmask = NULL;
     options.netif_ip6addr = NULL;
@@ -568,7 +581,7 @@ int parse_arguments (int argc, char *argv[])
     options.udpgw_connection_buffer_size = DEFAULT_UDPGW_CONNECTION_BUFFER_SIZE;
     options.udpgw_transparent_dns = 0;
     options.socks5_udp = 0;
-    
+//    options.loglevel = 5; // debug
     int i;
     for (i = 1; i < argc; i++) {
         char *arg = argv[i];
@@ -645,14 +658,6 @@ int parse_arguments (int argc, char *argv[])
             options.loglevels[channel] = loglevel;
             i += 2;
         }
-        else if (!strcmp(arg, "--tundev")) {
-            if (1 >= argc - i) {
-                fprintf(stderr, "%s: requires an argument\n", arg);
-                return 0;
-            }
-            options.tundev = argv[i + 1];
-            i++;
-        }
         else if (!strcmp(arg, "--netif-ipaddr")) {
             if (1 >= argc - i) {
                 fprintf(stderr, "%s: requires an argument\n", arg);
@@ -712,6 +717,16 @@ int parse_arguments (int argc, char *argv[])
         else if (!strcmp(arg, "--append-source-to-username")) {
             options.append_source_to_username = 1;
         }
+#ifdef BADVPN_SOCKS_UDP_RELAY
+        else if (!strcmp(arg, "--udpgw-remote-server-addr")) {
+//            options.udpgw_remote_server_addr = "0.0.0.0:0";
+            if (1 >= argc - i) {
+                fprintf(stderr, "%s: requires an argument\n", arg);
+                return 0;
+            }
+            options.udpgw_remote_server_addr = argv[i + 1];
+            i++;
+#else
         else if (!strcmp(arg, "--udpgw-remote-server-addr")) {
             if (1 >= argc - i) {
                 fprintf(stderr, "%s: requires an argument\n", arg);
@@ -719,8 +734,13 @@ int parse_arguments (int argc, char *argv[])
             }
             options.udpgw_remote_server_addr = argv[i + 1];
             i++;
+#endif
         }
+#ifdef BADVPN_SOCKS_UDP_RELAY
+        else if (!strcmp(arg, "--udprelay-max-connections")) {
+#else
         else if (!strcmp(arg, "--udpgw-max-connections")) {
+#endif
             if (1 >= argc - i) {
                 fprintf(stderr, "%s: requires an argument\n", arg);
                 return 0;
@@ -731,6 +751,7 @@ int parse_arguments (int argc, char *argv[])
             }
             i++;
         }
+#ifndef BADVPN_SOCKS_UDP_RELAY
         else if (!strcmp(arg, "--udpgw-connection-buffer-size")) {
             if (1 >= argc - i) {
                 fprintf(stderr, "%s: requires an argument\n", arg);
@@ -746,8 +767,9 @@ int parse_arguments (int argc, char *argv[])
             options.udpgw_transparent_dns = 1;
         }
         else if (!strcmp(arg, "--socks5-udp")) {
-            options.socks5_udp = 1;
-        }
+             options.socks5_udp = 1;
+         }
+#endif
         else {
             fprintf(stderr, "unknown option: %s\n", arg);
             return 0;
@@ -854,7 +876,11 @@ int process_arguments (void)
     // resolve remote udpgw server address
     if (options.udpgw_remote_server_addr) {
         if (!BAddr_Parse2(&udpgw_remote_server_addr, options.udpgw_remote_server_addr, NULL, 0, 0)) {
+#ifdef BADVPN_SOCKS_UDP_RELAY
+            BLog(BLOG_ERROR, "udprelay server addr: BAddr_Parse2 failed");
+#else
             BLog(BLOG_ERROR, "remote udpgw server addr: BAddr_Parse2 failed");
+#endif
             return 0;
         }
     }
@@ -871,14 +897,14 @@ void signal_handler (void *unused)
     terminate();
 }
 
-BAddr baddr_from_lwip (const ip_addr_t *ip_addr, uint16_t port_hostorder)
+BAddr baddr_from_lwip (int is_ipv6, const ipX_addr_t *ipx_addr, uint16_t port_hostorder)
 {
     BAddr addr;
-    if (IP_IS_V6(ip_addr)) {
-        BAddr_InitIPv6(&addr, (uint8_t *)ip_addr->u_addr.ip6.addr, hton16(port_hostorder));
-    } else {
-        BAddr_InitIPv4(&addr, ip_addr->u_addr.ip4.addr, hton16(port_hostorder));
-    }
+//    if (is_ipv6) {
+//        BAddr_InitIPv6(&addr, (uint8_t *)ipx_addr->ip6.addr, hton16(port_hostorder));
+//    } else {
+        BAddr_InitIPv4(&addr, ipx_addr->addr, hton16(port_hostorder));
+//    }
     return addr;
 }
 
@@ -900,12 +926,12 @@ void lwip_init_job_hadler (void *unused)
     lwip_init();
     
     // make addresses for netif
-    ip4_addr_t addr;
+    ip_addr_t addr;
     addr.addr = netif_ipaddr.ipv4;
-    ip4_addr_t netmask;
+    ip_addr_t netmask;
     netmask.addr = netif_netmask.ipv4;
-    ip4_addr_t gw;
-    ip4_addr_set_any(&gw);
+    ip_addr_t gw;
+    ip_addr_set_any(&gw);
     
     // init netif
     if (!netif_add(&the_netif, &addr, &netmask, &gw, NULL, netif_init_func, netif_input_func)) {
@@ -917,28 +943,22 @@ void lwip_init_job_hadler (void *unused)
     // set netif up
     netif_set_up(&the_netif);
     
-    // set netif link up, otherwise ip route will refuse to route
-    netif_set_link_up(&the_netif);
-    
     // set netif pretend TCP
     netif_set_pretend_tcp(&the_netif, 1);
     
     // set netif default
     netif_set_default(&the_netif);
     
-    if (options.netif_ip6addr) {
-        // add IPv6 address
-        ip6_addr_t ip6addr;
-        memset(&ip6addr, 0, sizeof(ip6addr)); // clears any "zone"
-        memcpy(ip6addr.addr, netif_ip6addr.bytes, sizeof(netif_ip6addr.bytes));
-        netif_ip6_addr_set(&the_netif, 0, &ip6addr);
-        netif_ip6_addr_set_state(&the_netif, 0, IP6_ADDR_VALID);
-    }
+//    if (options.netif_ip6addr) {
+//        // add IPv6 address
+//        memcpy(netif_ip6_addr(&the_netif, 0), netif_ip6addr.bytes, sizeof(netif_ip6addr.bytes));
+//        netif_ip6_addr_set_state(&the_netif, 0, IP6_ADDR_VALID);
+//    }
     
     // init listener
-    struct tcp_pcb *l = tcp_new_ip_type(IPADDR_TYPE_V4);
+    struct tcp_pcb *l = tcp_new();
     if (!l) {
-        BLog(BLOG_ERROR, "tcp_new_ip_type failed");
+        BLog(BLOG_ERROR, "tcp_new failed");
         goto fail;
     }
     
@@ -948,9 +968,6 @@ void lwip_init_job_hadler (void *unused)
         tcp_close(l);
         goto fail;
     }
-    
-    // ensure the listener only accepts connections from this netif
-    tcp_bind_netif(l, &the_netif);
     
     // listen listener
     if (!(listener = tcp_listen(l))) {
@@ -962,29 +979,27 @@ void lwip_init_job_hadler (void *unused)
     // setup listener accept handler
     tcp_accept(listener, listener_accept_func);
     
-    if (options.netif_ip6addr) {
-        struct tcp_pcb *l_ip6 = tcp_new_ip_type(IPADDR_TYPE_V6);
-        if (!l_ip6) {
-            BLog(BLOG_ERROR, "tcp_new_ip_type failed");
-            goto fail;
-        }
-        
-        if (tcp_bind_to_netif(l_ip6, "ho0") != ERR_OK) {
-            BLog(BLOG_ERROR, "tcp_bind_to_netif failed");
-            tcp_close(l_ip6);
-            goto fail;
-        }
-        
-        tcp_bind_netif(l_ip6, &the_netif);
-        
-        if (!(listener_ip6 = tcp_listen(l_ip6))) {
-            BLog(BLOG_ERROR, "tcp_listen failed");
-            tcp_close(l_ip6);
-            goto fail;
-        }
-        
-        tcp_accept(listener_ip6, listener_accept_func);
-    }
+//    if (options.netif_ip6addr) {
+//        struct tcp_pcb *l_ip6 = tcp_new_ip6();
+//        if (!l_ip6) {
+//            BLog(BLOG_ERROR, "tcp_new_ip6 failed");
+//            goto fail;
+//        }
+//        
+//        if (tcp_bind_to_netif(l_ip6, "ho0") != ERR_OK) {
+//            BLog(BLOG_ERROR, "tcp_bind_to_netif failed");
+//            tcp_close(l_ip6);
+//            goto fail;
+//        }
+//        
+//        if (!(listener_ip6 = tcp_listen(l_ip6))) {
+//            BLog(BLOG_ERROR, "tcp_listen failed");
+//            tcp_close(l_ip6);
+//            goto fail;
+//        }
+//        
+//        tcp_accept(listener_ip6, listener_accept_func);
+//    }
     
     return;
     
@@ -998,34 +1013,14 @@ void tcp_timer_handler (void *unused)
 {
     ASSERT(!quitting)
     
-    BLog(BLOG_DEBUG, "TCP timer");
+//    BLog(BLOG_DEBUG, "TCP timer");
     
     // schedule next timer
+    // TODO: calculate timeout so we don't drift
     BReactor_SetTimer(&ss, &tcp_timer);
     
-    // call the TCP timer function (every 1/4 second)
     tcp_tmr();
-    
-    // increment tcp_timer_mod4
-    tcp_timer_mod4 = (tcp_timer_mod4 + 1) % 4;
-    
-    // every second, call other timer functions
-    if (tcp_timer_mod4 == 0) {
-#if IP_REASSEMBLY
-        ASSERT(IP_TMR_INTERVAL == 4 * TCP_TMR_INTERVAL)
-        ip_reass_tmr();
-#endif
-        
-#if LWIP_IPV6
-        ASSERT(ND6_TMR_INTERVAL == 4 * TCP_TMR_INTERVAL)
-        nd6_tmr();
-#endif
-    
-#if LWIP_IPV6 && LWIP_IPV6_REASS
-        ASSERT(IP6_REASS_TMR_INTERVAL == 4 * TCP_TMR_INTERVAL)
-        ip6_reass_tmr();
-#endif
-    }
+    return;
 }
 
 void device_error_handler (void *unused)
@@ -1078,14 +1073,14 @@ int process_device_udp_packet (uint8_t *data, int data_len)
 {
     ASSERT(data_len >= 0)
     
-    // do nothing if we don't use udpgw or SOCKS UDP
+    // do nothing if we don't have udpgw
     if (udp_mode == UdpModeNone) {
-        goto fail;
-    }
+           goto fail;
+       }
     
     BAddr local_addr;
     BAddr remote_addr;
-    int is_dns;
+    int is_dns = 0;
     
     uint8_t ip_version = 0;
     if (data_len > 0) {
@@ -1127,9 +1122,10 @@ int process_device_udp_packet (uint8_t *data, int data_len)
             
             // if transparent DNS is enabled, any packet arriving at out netif
             // address to port 53 is considered a DNS packet
-            is_dns = (options.udpgw_transparent_dns &&
-                      ipv4_header.destination_address == netif_ipaddr.ipv4 &&
-                      udp_header.dest_port == hton16(53));
+//            is_dns = (options.udpgw_transparent_dns &&
+//                      ipv4_header.destination_address == netif_ipaddr.ipv4 &&
+//                      udp_header.dest_port == hton16(53));
+//            is_dns = 0;
         } break;
         
         case 6: {
@@ -1180,16 +1176,24 @@ int process_device_udp_packet (uint8_t *data, int data_len)
     
     // check payload length
     if (data_len > udp_mtu) {
+#ifdef BADVPN_SOCKS_UDP_RELAY
+        BLog(BLOG_ERROR, "packet is too large, cannot send to udprelay");
+#else
         BLog(BLOG_ERROR, "packet is too large, cannot send to udpgw");
+#endif
         goto fail;
     }
-    
     // submit packet to udpgw or SOCKS UDP
-    if (udp_mode == UdpModeUdpgw) {
+    if (udp_mode == UdpModeUdpgw)
+    {
         SocksUdpGwClient_SubmitPacket(&udpgw_client, local_addr, remote_addr,
-                                      is_dns, data, data_len);
-    } else if (udp_mode == UdpModeSocks) {
-        SocksUdpClient_SubmitPacket(&socks_udp_client, local_addr, remote_addr, data, data_len);
+                                         is_dns, data, data_len);
+    }
+    else if (udp_mode == UdpModeSocks)
+    {
+//        BAddr test;
+//        BAddr_InitIPv4(&test, socks_server_addr.ipv4.ip, local_addr.ipv4.port);
+        SocksUdpClient_SubmitPacket(&socks_udp_client, local_addr, remote_addr, data, data_len);//local_addr change to socks_server_addr
     }
     
     return 1;
@@ -1205,20 +1209,21 @@ err_t netif_init_func (struct netif *netif)
     netif->name[0] = 'h';
     netif->name[1] = 'o';
     netif->output = netif_output_func;
-    netif->output_ip6 = netif_output_ip6_func;
+//    netif->output_ip6 = netif_output_ip6_func;
+    netif->mtu = options.mtu;
     
     return ERR_OK;
 }
 
-err_t netif_output_func (struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
+err_t netif_output_func (struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
     return common_netif_output(netif, p);
 }
 
-err_t netif_output_ip6_func (struct netif *netif, struct pbuf *p, const ip6_addr_t *ipaddr)
-{
-    return common_netif_output(netif, p);
-}
+//err_t netif_output_ip6_func (struct netif *netif, struct pbuf *p, ip6_addr_t *ipaddr)
+//{
+//    return common_netif_output(netif, p);
+//}
 
 err_t common_netif_output (struct netif *netif, struct pbuf *p)
 {
@@ -1249,7 +1254,7 @@ err_t common_netif_output (struct netif *netif, struct pbuf *p)
             }
             memcpy(device_write_buf + len, p->payload, p->len);
             len += p->len;
-        } while (p = p->next);
+        } while ((p = p->next) != NULL);
         
         SYNC_FROMHERE
         BTap_Send(&device, device_write_buf, len);
@@ -1272,9 +1277,9 @@ err_t netif_input_func (struct pbuf *p, struct netif *inp)
             return ip_input(p, inp);
         } break;
         case 6: {
-            if (options.netif_ip6addr) {
-                return ip6_input(p, inp);
-            }
+//            if (options.netif_ip6addr) {
+//                return ip6_input(p, inp);
+//            }
         } break;
     }
     
@@ -1304,6 +1309,10 @@ err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
 {
     ASSERT(err == ERR_OK)
     
+    // signal accepted
+    struct tcp_pcb *this_listener = (PCB_ISIPV6(newpcb) ? listener_ip6 : listener);
+    tcp_accepted(this_listener);
+    
     // allocate client structure
     struct tcp_client *client = (struct tcp_client *)malloc(sizeof(*client));
     if (!client) {
@@ -1316,8 +1325,8 @@ err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
     SYNC_FROMHERE
     
     // read addresses
-    client->local_addr = baddr_from_lwip(&newpcb->local_ip, newpcb->local_port);
-    client->remote_addr = baddr_from_lwip(&newpcb->remote_ip, newpcb->remote_port);
+    client->local_addr = baddr_from_lwip(PCB_ISIPV6(newpcb), &newpcb->local_ip, newpcb->local_port);
+    client->remote_addr = baddr_from_lwip(PCB_ISIPV6(newpcb), &newpcb->remote_ip, newpcb->remote_port);
     
     // get destination address
     BAddr addr = client->local_addr;
@@ -1338,17 +1347,15 @@ err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
     }
     
     // init SOCKS
-    if (!BSocksClient_Init(&client->socks_client,
-        socks_server_addr, socks_auth_info, socks_num_auth_info, addr, /*udp=*/false,
-        (BSocksClient_handler)client_socks_handler, client, &ss))
-    {
+    if (!BSocksClient_Init(&client->socks_client, socks_server_addr, socks_auth_info, socks_num_auth_info,
+                           addr,/*udp=*/false, (BSocksClient_handler)client_socks_handler, client, &ss)) {
         BLog(BLOG_ERROR, "listener accept: BSocksClient_Init failed");
         goto fail1;
     }
     
-    // init aborted and dead_aborted
-    client->aborted = 0;
-    DEAD_INIT(client->dead_aborted);
+    // init dead vars
+    DEAD_INIT(client->dead);
+    DEAD_INIT(client->dead_client);
     
     // add to linked list
     LinkedList1_Append(&tcp_clients, &client->list_node);
@@ -1379,12 +1386,14 @@ err_t listener_accept_func (void *arg, struct tcp_pcb *newpcb, err_t err)
     
     client_log(client, BLOG_INFO, "accepted");
     
-    DEAD_ENTER(client->dead_aborted)
+    DEAD_ENTER(client->dead_client)
     SYNC_COMMIT
-    DEAD_LEAVE2(client->dead_aborted)
+    DEAD_LEAVE2(client->dead_client)
+    if (DEAD_KILLED) {
+        return ERR_ABRT;
+    }
     
-    // Return ERR_ABRT if and only if tcp_abort was called from this callback.
-    return (DEAD_KILLED > 0) ? ERR_ABRT : ERR_OK;
+    return ERR_OK;
     
 fail1:
     SYNC_BREAK
@@ -1399,6 +1408,9 @@ void client_handle_freed_client (struct tcp_client *client)
     ASSERT(!client->client_closed)
     
     // pcb was taken care of by the caller
+    
+    // kill client dead var
+    DEAD_KILL(client->dead_client);
     
     // set client closed
     client->client_closed = 1;
@@ -1428,7 +1440,7 @@ void client_free_client (struct tcp_client *client)
     err_t err = tcp_close(client->pcb);
     if (err != ERR_OK) {
         client_log(client, BLOG_ERROR, "tcp_close failed (%d)", err);
-        client_abort_pcb(client);
+        tcp_abort(client->pcb);
     }
     
     client_handle_freed_client(client);
@@ -1443,26 +1455,10 @@ void client_abort_client (struct tcp_client *client)
     tcp_recv(client->pcb, NULL);
     tcp_sent(client->pcb, NULL);
     
-    // abort
-    client_abort_pcb(client);
-    
-    client_handle_freed_client(client);
-}
-
-void client_abort_pcb (struct tcp_client *client)
-{
-    ASSERT(!client->aborted)
-    
-    // abort the PCB
+    // free pcb
     tcp_abort(client->pcb);
     
-    // mark aborted
-    client->aborted = 1;
-    
-    // kill dead_aborted with value 1 signaling that tcp_abort was done;
-    // this is contrasted to killing with value -1 from client_dealloc
-    // signaling that the client was freed without tcp_abort
-    DEAD_KILL_WITH(client->dead_aborted, 1);
+    client_handle_freed_client(client);
 }
 
 void client_free_socks (struct tcp_client *client)
@@ -1505,7 +1501,10 @@ void client_murder (struct tcp_client *client)
         tcp_sent(client->pcb, NULL);
         
         // abort
-        client_abort_pcb(client);
+        tcp_abort(client->pcb);
+        
+        // kill client dead var
+        DEAD_KILL(client->dead_client);
         
         // set client closed
         client->client_closed = 1;
@@ -1536,10 +1535,8 @@ void client_dealloc (struct tcp_client *client)
     // remove client entry
     LinkedList1_Remove(&tcp_clients, &client->list_node);
     
-    // kill dead_aborted with value -1 unless already aborted
-    if (!client->aborted) {
-        DEAD_KILL_WITH(client->dead_aborted, -1);
-    }
+    // kill dead var
+    DEAD_KILL(client->dead);
     
     // free memory
     free(client->socks_username);
@@ -1551,7 +1548,7 @@ void client_err_func (void *arg, err_t err)
     struct tcp_client *client = (struct tcp_client *)arg;
     ASSERT(!client->client_closed)
     
-    client_log(client, BLOG_INFO, "client error (%d)", (int)err);
+    client_log(client, BLOG_INFO, "client_err_func client error (%d)", (int)err);
     
     // the pcb was taken care of by the caller
     client_handle_freed_client(client);
@@ -1559,55 +1556,59 @@ void client_err_func (void *arg, err_t err)
 
 err_t client_recv_func (void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
+
     struct tcp_client *client = (struct tcp_client *)arg;
+    client_log(client, BLOG_INFO, "client_recv_func client received (%d)", sizeof(client->buf));
+
     ASSERT(!client->client_closed)
     ASSERT(err == ERR_OK) // checked in lwIP source. Otherwise, I've no idea what should
                           // be done with the pbuf in case of an error.
     
-    DEAD_ENTER(client->dead_aborted)
-    
     if (!p) {
         client_log(client, BLOG_INFO, "client closed");
         client_free_client(client);
-    } else {
-        ASSERT(p->tot_len > 0)
+        return ERR_ABRT;
+    }
+    
+    ASSERT(p->tot_len > 0)
+    
+    // check if we have enough buffer
+    if (p->tot_len > sizeof(client->buf) - client->buf_used) {
+        client_log(client, BLOG_ERROR, "no buffer for data !?!");
+        return ERR_MEM;
+    }
+    
+    // copy data to buffer
+    ASSERT_EXECUTE(pbuf_copy_partial(p, client->buf + client->buf_used, p->tot_len, 0) == p->tot_len)
+    client->buf_used += p->tot_len;
+    
+    // if there was nothing in the buffer before, and SOCKS is up, start send data
+    if (client->buf_used == p->tot_len && client->socks_up) {
+        ASSERT(!client->socks_closed) // this callback is removed when SOCKS is closed
         
-        // check if we have enough buffer
-        if (p->tot_len > sizeof(client->buf) - client->buf_used) {
-            client_log(client, BLOG_ERROR, "no buffer for data !?!");
-            DEAD_LEAVE2(client->dead_aborted)
-            return ERR_MEM;
-        }
-        
-        // copy data to buffer
-        ASSERT_EXECUTE(pbuf_copy_partial(p, client->buf + client->buf_used, p->tot_len, 0) == p->tot_len)
-        client->buf_used += p->tot_len;
-        
-        // free pbuff
-        int p_tot_len = p->tot_len;
-        pbuf_free(p);
-        
-        // if there was nothing in the buffer before, and SOCKS is up, start send data
-        if (client->buf_used == p_tot_len && client->socks_up) {
-            ASSERT(!client->socks_closed) // this callback is removed when SOCKS is closed
-            
-            SYNC_DECL
-            SYNC_FROMHERE
-            client_send_to_socks(client);
-            SYNC_COMMIT
+        SYNC_DECL
+        SYNC_FROMHERE
+        client_send_to_socks(client);
+        DEAD_ENTER(client->dead_client)
+        SYNC_COMMIT
+        DEAD_LEAVE2(client->dead_client)
+        if (DEAD_KILLED) {
+            return ERR_ABRT;
         }
     }
     
-    DEAD_LEAVE2(client->dead_aborted)
+    // free pbuff
+    pbuf_free(p);
     
-    // Return ERR_ABRT if and only if tcp_abort was called from this callback.
-    return (DEAD_KILLED > 0) ? ERR_ABRT : ERR_OK;
+    return ERR_OK;
 }
 
 void client_socks_handler (struct tcp_client *client, int event)
 {
     ASSERT(!client->socks_closed)
-    
+#if SOCKS_DATA_LOG_ENABLE
+    client_log(client, BLOG_DEBUG, "tun2socks client_socks_handler event: %d", event);
+#endif
     switch (event) {
         case BSOCKSCLIENT_EVENT_ERROR: {
             client_log(client, BLOG_INFO, "SOCKS error");
@@ -1618,31 +1619,36 @@ void client_socks_handler (struct tcp_client *client, int event)
         case BSOCKSCLIENT_EVENT_UP: {
             ASSERT(!client->socks_up)
             
-            client_log(client, BLOG_INFO, "SOCKS up");
+            client_log(client, BLOG_INFO, "tun2socks SOCKS up");
             
             // init sending
             client->socks_send_if = BSocksClient_GetSendInterface(&client->socks_client);
             StreamPassInterface_Sender_Init(client->socks_send_if, (StreamPassInterface_handler_done)client_socks_send_handler_done, client);
-            
+            client_log(client, BLOG_INFO, "tun2socks SOCKS init 0");
             // init receiving
             client->socks_recv_if = BSocksClient_GetRecvInterface(&client->socks_client);
             StreamRecvInterface_Receiver_Init(client->socks_recv_if, (StreamRecvInterface_handler_done)client_socks_recv_handler_done, client);
             client->socks_recv_buf_used = -1;
             client->socks_recv_tcp_pending = 0;
+            client_log(client, BLOG_INFO, "tun2socks SOCKS init 1");
             if (!client->client_closed) {
+                client_log(client, BLOG_INFO, "tun2socks SOCKS init 2");
                 tcp_sent(client->pcb, client_sent_func);
             }
-            
+            client_log(client, BLOG_INFO, "tun2socks SOCKS init 3");
             // set up
             client->socks_up = 1;
             
             // start sending data if there is any
             if (client->buf_used > 0) {
+                client_log(client, BLOG_INFO, "tun2socks SOCKS init 4");
+//                client->buf_used = 0;
                 client_send_to_socks(client);
             }
-            
+            client_log(client, BLOG_INFO, "tun2socks SOCKS init 5");
             // start receiving data if client is still up
             if (!client->client_closed) {
+                client_log(client, BLOG_INFO, "tun2socks SOCKS init 6");
                 client_socks_recv_initiate(client);
             }
         } break;
@@ -1654,6 +1660,9 @@ void client_socks_handler (struct tcp_client *client, int event)
             
             client_free_socks(client);
         } break;
+        
+        default:
+            ASSERT(0);
     }
 }
 
@@ -1663,6 +1672,9 @@ void client_send_to_socks (struct tcp_client *client)
     ASSERT(client->socks_up)
     ASSERT(client->buf_used > 0)
     
+#if SOCKS_DATA_LOG_ENABLE
+    client_log(client, BLOG_DEBUG, "tun2socks client_send_to_socks data<len: %d>: %@", client->buf_used);
+#endif
     // schedule sending
     StreamPassInterface_Sender_Send(client->socks_send_if, client->buf, client->buf_used);
 }
@@ -1725,13 +1737,19 @@ void client_socks_recv_handler_done (struct tcp_client *client, int data_len)
     client->socks_recv_waiting = 0;
     
     // send to client
+    client_log(client, BLOG_INFO, "client_socks_recv_handler_done prepare send to client: %d", data_len);
     if (client_socks_recv_send_out(client) < 0) {
+        client_log(client, BLOG_INFO, "client_socks_recv_send_out error");
         return;
     }
     
     // continue receiving if needed
     if (client->socks_recv_buf_used == -1) {
+        client_log(client, BLOG_INFO, "client_socks_recv_send_out continue receiving");
         client_socks_recv_initiate(client);
+    }else{
+//        client_socks_recv_initiate(client);
+        client_log(client, BLOG_INFO, "client_socks_recv_send_out continue error");
     }
 }
 
@@ -1748,18 +1766,29 @@ int client_socks_recv_send_out (struct tcp_client *client)
     
     do {
         int to_write = bmin_int(client->socks_recv_buf_used - client->socks_recv_buf_sent, tcp_sndbuf(client->pcb));
+#if SOCKS_DATA_LOG_ENABLE
+        client_log(client, BLOG_INFO, "tun2socks client_socks_recv_send_out data<len: %d>", to_write);
+#endif
         if (to_write == 0) {
+#if SOCKS_DATA_LOG_ENABLE
+            client_log(client, BLOG_INFO, "tun2socks client_socks_recv_send_out to_write zero, break");
+#endif
             break;
         }
-        
         err_t err = tcp_write(client->pcb, client->socks_recv_buf + client->socks_recv_buf_sent, to_write, TCP_WRITE_FLAG_COPY);
+#if SOCKS_DATA_LOG_ENABLE
+        client_log(client, BLOG_INFO, "tun2socks client_socks_recv_send_out tcp write err: %d", err);
+#endif
         if (err != ERR_OK) {
             if (err == ERR_MEM) {
+#if SOCKS_DATA_LOG_ENABLE
+                client_log(client, BLOG_INFO, "tun2socks client_socks_recv_send_out tcp write error error_mem");
+#endif
                 break;
             }
-            
+#if SOCKS_DATA_LOG_ENABLE
             client_log(client, BLOG_INFO, "tcp_write failed (%d)", (int)err);
-            
+#endif
             client_abort_client(client);
             return -1;
         }
@@ -1767,12 +1796,18 @@ int client_socks_recv_send_out (struct tcp_client *client)
         client->socks_recv_buf_sent += to_write;
         client->socks_recv_tcp_pending += to_write;
     } while (client->socks_recv_buf_sent < client->socks_recv_buf_used);
-    
+#if SOCKS_DATA_LOG_ENABLE
+    client_log(client, BLOG_INFO, "tun2socks client_socks_recv_send_out begin tcp_output");
+#endif
     // start sending now
     err_t err = tcp_output(client->pcb);
+#if SOCKS_DATA_LOG_ENABLE
+    client_log(client, BLOG_INFO, "tun2socks client_socks_recv_send_out begin tcp_output err: %d", err);
+#endif
     if (err != ERR_OK) {
+#if SOCKS_DATA_LOG_ENABLE
         client_log(client, BLOG_INFO, "tcp_output failed (%d)", (int)err);
-        
+#endif
         client_abort_client(client);
         return -1;
     }
@@ -1793,6 +1828,7 @@ int client_socks_recv_send_out (struct tcp_client *client)
     
     // everything was queued
     client->socks_recv_buf_used = -1;
+//    client->socks_recv_buf_used = 0;
     
     return 0;
 }
@@ -1805,8 +1841,6 @@ err_t client_sent_func (void *arg, struct tcp_pcb *tpcb, u16_t len)
     ASSERT(client->socks_up)
     ASSERT(len > 0)
     ASSERT(len <= client->socks_recv_tcp_pending)
-    
-    DEAD_ENTER(client->dead_aborted)
     
     // decrement pending
     client->socks_recv_tcp_pending -= len;
@@ -1821,7 +1855,7 @@ err_t client_sent_func (void *arg, struct tcp_pcb *tpcb, u16_t len)
         
         // possibly send more data
         if (client_socks_recv_send_out(client) < 0) {
-            goto out;
+            return ERR_ABRT;
         }
         
         // we just queued some data, so it can't have been confirmed yet
@@ -1832,21 +1866,25 @@ err_t client_sent_func (void *arg, struct tcp_pcb *tpcb, u16_t len)
             SYNC_DECL
             SYNC_FROMHERE
             client_socks_recv_initiate(client);
+            DEAD_ENTER(client->dead_client)
             SYNC_COMMIT
+            DEAD_LEAVE2(client->dead_client)
+            if (DEAD_KILLED) {
+                return ERR_ABRT;
+            }
         }
-    } else {    
-        // have we sent everything after SOCKS was closed?
-        if (client->socks_closed && client->socks_recv_tcp_pending == 0) {
-            client_log(client, BLOG_INFO, "removing after SOCKS went down");
-            client_free_client(client);
-        }
+        
+        return ERR_OK;
     }
     
-out:
-    DEAD_LEAVE2(client->dead_aborted)
+    // have we sent everything after SOCKS was closed?
+    if (client->socks_closed && client->socks_recv_tcp_pending == 0) {
+        client_log(client, BLOG_INFO, "removing after SOCKS went down");
+        client_free_client(client);
+        return ERR_ABRT;
+    }
     
-    // Return ERR_ABRT if and only if tcp_abort was called from this callback.
-    return (DEAD_KILLED > 0) ? ERR_ABRT : ERR_OK;
+    return ERR_OK;
 }
 
 void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len)
@@ -1855,14 +1893,16 @@ void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr remote_add
     ASSERT(local_addr.type == BADDR_TYPE_IPV4 || local_addr.type == BADDR_TYPE_IPV6)
     ASSERT(local_addr.type == remote_addr.type)
     ASSERT(data_len >= 0)
-
     char const *source_name = (udp_mode == UdpModeUdpgw) ? "udpgw" : "SOCKS UDP";
-    
     int packet_length = 0;
     
     switch (local_addr.type) {
         case BADDR_TYPE_IPV4: {
+#ifdef BADVPN_SOCKS_UDP_RELAY
+            BLog(BLOG_INFO, "UDP: from udprelay %d bytes", data_len);
+#else
             BLog(BLOG_INFO, "UDP: from %s %d bytes", source_name, data_len);
+#endif
             
             if (data_len > UINT16_MAX - (sizeof(struct ipv4_header) + sizeof(struct udp_header)) ||
                 data_len > BTap_GetMTU(&device) - (int)(sizeof(struct ipv4_header) + sizeof(struct udp_header))
@@ -1898,13 +1938,43 @@ void udp_send_packet_to_device (void *unused, BAddr local_addr, BAddr remote_add
             memcpy(device_write_buf + sizeof(iph), &udph, sizeof(udph));
             memcpy(device_write_buf + sizeof(iph) + sizeof(udph), data, data_len);
             packet_length = sizeof(iph) + sizeof(udph) + data_len;
+            
+            
+            char sender_src[256];
+            char sender_dest[256];
+            {
+                int addr = iph.source_address;
+                sprintf(sender_src,"src:%"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8,
+                              *((uint8_t *)&addr + 0),
+                              *((uint8_t *)&addr + 1),
+                              *((uint8_t *)&addr + 2),
+                              *((uint8_t *)&addr + 3));
+
+            }
+            {
+                int addr = iph.destination_address;
+                sprintf(sender_dest,"src:%"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8,
+                              *((uint8_t *)&addr + 0),
+                              *((uint8_t *)&addr + 1),
+                              *((uint8_t *)&addr + 2),
+                              *((uint8_t *)&addr + 3));
+            }
+            BLog(BLOG_ERROR, "UDP_REPLY:%s:%d-->%s:%d",sender_src, udph.source_port,sender_dest, udph.dest_port);
         } break;
         
         case BADDR_TYPE_IPV6: {
+#ifdef BADVPN_SOCKS_UDP_RELAY
+            BLog(BLOG_INFO, "UDP/IPv6: from udprelay %d bytes", data_len);
+#else
             BLog(BLOG_INFO, "UDP/IPv6: from %s %d bytes", source_name, data_len);
+#endif
             
             if (!options.netif_ip6addr) {
+#ifdef BADVPN_SOCKS_UDP_RELAY
+                BLog(BLOG_ERROR, "got IPv6 packet from udprelay but IPv6 is disabled");
+#else
                 BLog(BLOG_ERROR, "got IPv6 packet from %s but IPv6 is disabled", source_name);
+#endif
                 return;
             }
             

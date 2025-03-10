@@ -39,12 +39,12 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include <misc/debug.h>
-#include <misc/byteorder.h>
-#include <misc/parse_number.h>
-#include <misc/find_char.h>
-#include <misc/print_macros.h>
-#include <misc/memref.h>
+#include "misc/debug.h"
+#include "misc/byteorder.h"
+#include "misc/parse_number.h"
+#include "misc/find_char.h"
+#include "misc/print_macros.h"
+#include "misc/memref.h"
 
 struct ipv6_addr {
     uint8_t bytes[16];

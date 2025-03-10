@@ -31,15 +31,15 @@
 #include <windows.h>
 #else
 #include <signal.h>
-#include <system/BUnixSignal.h>
+#include "system/BUnixSignal.h"
 #endif
 
-#include <misc/debug.h>
-#include <base/BLog.h>
+#include "misc/debug.h"
+#include "base/BLog.h"
 
-#include <system/BSignal.h>
+#include "system/BSignal.h"
 
-#include <generated/blog_channel_BSignal.h>
+#include "generated/blog_channel_BSignal.h"
 
 static struct {
     int initialized;
@@ -94,7 +94,7 @@ static BOOL WINAPI ctrl_handler (DWORD type)
 
 static void unix_signal_handler (void *user, int signo)
 {
-    ASSERT(signo == SIGTERM || signo == SIGINT || signo == SIGHUP)
+    ASSERT(signo == SIGTERM || signo == SIGINT)
     ASSERT(bsignal_global.initialized)
     ASSERT(!bsignal_global.finished)
     
@@ -141,7 +141,6 @@ int BSignal_Init (BReactor *reactor, BSignal_handler handler, void *user)
     ASSERT_FORCE(sigemptyset(&sset) == 0)
     ASSERT_FORCE(sigaddset(&sset, SIGTERM) == 0)
     ASSERT_FORCE(sigaddset(&sset, SIGINT) == 0)
-    ASSERT_FORCE(sigaddset(&sset, SIGHUP) == 0)
     
     // init BUnixSignal
     if (!BUnixSignal_Init(&bsignal_global.signal, bsignal_global.reactor, sset, unix_signal_handler, NULL)) {

@@ -34,9 +34,9 @@
 #include <string.h>
 #include <limits.h>
 
-#include <misc/debug.h>
-#include <misc/balloc.h>
-#include <misc/strdup.h>
+#include "misc/debug.h"
+#include "misc/balloc.h"
+#include "misc/strdup.h"
 
 typedef struct {
     char const *ptr;

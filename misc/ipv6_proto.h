@@ -33,9 +33,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <misc/debug.h>
-#include <misc/byteorder.h>
-#include <misc/packed.h>
+#include "misc/debug.h"
+#include "misc/byteorder.h"
+#include "misc/packed.h"
 
 #define IPV6_NEXT_IGMP 2
 #define IPV6_NEXT_UDP 17
