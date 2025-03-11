@@ -6,7 +6,7 @@ set(LWIP_SOURCES
     src/core/pbuf.c
     src/core/tcp.c
     src/core/tcp_out.c
-    src/core/sys.c
+    #src/core/sys.c
     src/core/netif.c
     src/core/def.c
     src/core/mem.c

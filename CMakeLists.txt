@@ -99,6 +99,22 @@ elseif (BREACTOR_BACKEND STREQUAL "emscripten")
     add_definitions(-DBADVPN_BREACTOR_EMSCRIPTEN)
 endif ()
 
+if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    # set(BADVPN_USE_SIGNALFD 0)
+    #add_definitions(-DBADVPN_USE_SIGNALFD)
+    # set(BADVPN_USE_SELFPIPE 0)
+    #add_definitions(-DBADVPN_USE_SELFPIPE)
+    message(STATUS "BADVPN_USE_SIGNALFD: ${BADVPN_USE_SIGNALFD}")
+    message(STATUS "BADVPN_USE_SELFPIPE: ${BADVPN_USE_SELFPIPE}")
+    message(STATUS "BADVPN_USE_KEVENT: ${BADVPN_USE_KEVENT}")   
+    add_definitions(-DBADVPN_USE_KEVENT)
+    add_definitions(-DBADVPN_FREEBSD)
+endif ()
+
+if(APPLE)
+    add_definitions(-DBADVPN_DARWIN)   # ✅ Ensure it's defined for macOS/iOS
+endif()
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${LIBCRYPTO_INCLUDE_DIRS}

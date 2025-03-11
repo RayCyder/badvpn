@@ -21,10 +21,11 @@ if (NOT EMSCRIPTEN)
             BUnixSignal.c
             BConnection_unix.c
             BDatagram_unix.c
-            BProcess.c
-            BInputProcess.c
-            BThreadSignal.c
-            BLockReactor.c
+            BDatagram_common.c
+            # BProcess.c
+            # BInputProcess.c
+            # BThreadSignal.c
+            # BLockReactor.c
         )
     endif ()
 endif ()
