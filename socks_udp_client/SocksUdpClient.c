@@ -30,19 +30,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <misc/balloc.h>
-#include <misc/offset.h>
-#include <misc/byteorder.h>
-#include <misc/compare.h>
-#include <misc/socks_proto.h>
-#include <misc/debug.h>
-#include <misc/bsize.h>
-#include <base/BLog.h>
-#include <system/BAddr.h>
+#include "misc/balloc.h"
+#include "misc/offset.h"
+#include "misc/byteorder.h"
+#include "misc/compare.h"
+#include "misc/socks_proto.h"
+#include "misc/debug.h"
+#include "misc/bsize.h"
+#include "base/BLog.h"
+#include "system/BAddr.h"
 
-#include <socks_udp_client/SocksUdpClient.h>
+#include "socks_udp_client/SocksUdpClient.h"
 
-#include <generated/blog_channel_SocksUdpClient.h>
+#include "generated/blog_channel_SocksUdpClient.h"
 
 static const int DnsPort = 53;
 
@@ -98,7 +98,6 @@ void socks_state_handler (struct SocksUdpClient_connection *con, int event)
                 BLog(BLOG_ERROR, "Bad address type in TCP local address.");
                 return connection_free(con);
             }
-
             // Bind the UDP socket to the same IP address and let the kernel pick the port.
             BAddr udp_bound_addr = tcp_local_addr;
             BAddr_SetPort(&udp_bound_addr, 0);
@@ -121,11 +120,12 @@ void socks_state_handler (struct SocksUdpClient_connection *con, int event)
             // The remote address to send datagrams to is the BND.ADDR provided by the
             // SOCKS server.
             BAddr remote_addr = BSocksClient_GetBindAddr(&con->socks);
+            BLog(BLOG_ERROR,
+                 "get address from BSocksClient:%p",&con->socks);
 
             // Don't bother setting a source address for datagrams since we are bound.
             BIPAddr local_addr;
             BIPAddr_InitInvalid(&local_addr);
-
             // Set the addresses for BDatagram.
             // This will unblock the queue of outgoing packets.
             BDatagram_SetSendAddrs(&con->socket, remote_addr, local_addr);
@@ -331,7 +331,7 @@ struct SocksUdpClient_connection * connection_init (
 
     // Initiate connection to socks server
     if (!BSocksClient_Init(&con->socks, o->server_addr, o->auth_info, o->num_auth_info,
-        dummy_dst_addr, true, (BSocksClient_handler)socks_state_handler, con, o->reactor))
+        dummy_dst_addr, /*udp=*/true, (BSocksClient_handler)socks_state_handler, con, o->reactor))
     {
         BLog(BLOG_ERROR, "Failed to initialize SOCKS client");
         goto fail3;

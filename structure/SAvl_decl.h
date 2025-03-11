@@ -32,7 +32,7 @@
 typedef SAvlEntry *SAvl__TreeLink;
 
 #include "SAvl_tree.h"
-#include <structure/CAvl_decl.h>
+#include "structure/CAvl_decl.h"
 
 typedef struct {
     SAvl__Tree tree;

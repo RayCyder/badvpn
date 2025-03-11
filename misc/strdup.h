@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
 /**
  * Allocate and copy a null-terminated string.

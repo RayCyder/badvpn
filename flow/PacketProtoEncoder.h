@@ -36,8 +36,8 @@
 
 #include <stdint.h>
 
-#include <base/DebugObject.h>
-#include <flow/PacketRecvInterface.h>
+#include "base/DebugObject.h"
+#include "flow/PacketRecvInterface.h"
 
 /**
  * Object which encodes packets according to PacketProto.

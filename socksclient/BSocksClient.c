@@ -1,9 +1,9 @@
 /**
  * @file BSocksClient.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,13 +29,18 @@
 
 #include <string.h>
 
-#include <misc/byteorder.h>
-#include <misc/balloc.h>
-#include <base/BLog.h>
+#include "misc/byteorder.h"
+#include "misc/balloc.h"
+#include "base/BLog.h"
 
-#include <socksclient/BSocksClient.h>
+#include "socksclient/BSocksClient.h"
 
-#include <generated/blog_channel_BSocksClient.h>
+#include "generated/blog_channel_BSocksClient.h"
+
+
+#ifdef __APPLE__
+#import <arpa/inet.h>
+#endif
 
 #define STATE_CONNECTING 1
 #define STATE_CONNECTED_HANDLER 2
@@ -62,6 +67,8 @@ static void continue_job_handler (BSocksClient *o);
 static void recv_handler_done (BSocksClient *o, int data_len);
 static void send_handler_done (BSocksClient *o);
 static void auth_finished (BSocksClient *p);
+
+# define TCP_DATA_LOG_ENABLE 1
 
 void report_error (BSocksClient *o, int error)
 {
@@ -209,7 +216,7 @@ void continue_job_handler (BSocksClient *o)
 
     // allocate buffer for sending hello
     bsize_t size = bsize_add(
-        bsize_fromsize(sizeof(struct socks_client_hello_header)), 
+        bsize_fromsize(sizeof(struct socks_client_hello_header)),
         bsize_mul(
             bsize_fromsize(o->num_auth_info),
             bsize_fromsize(sizeof(struct socks_client_hello_method))
@@ -231,7 +238,9 @@ void continue_job_handler (BSocksClient *o)
         method.method = hton8(o->auth_info[i].auth_type);
         memcpy(o->buffer + sizeof(header) + i * sizeof(method), &method, sizeof(method));
     }
-    
+#if SOCKS_DATA_LOG_ENABLE
+    BLog(BLOG_DEBUG, "tun2socks socks send hello data<len: %d>", size.value);
+#endif
     // send
     PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
     
@@ -257,6 +266,12 @@ void recv_handler_done (BSocksClient *o, int data_len)
         do_receive(o);
         return;
     }
+#if TCP_DATA_LOG_ENABLE
+    struct in_addr a = {o->dest_addr.ipv4.ip};
+    char *ip = inet_ntoa(a);
+    BLog(BLOG_INFO, "socks client<%s:%d> recv_handler_done state: %d, data <len: %d>", ip, o->dest_addr.ipv4.port, o->state, data_len);
+
+#endif
     
     switch (o->state) {
         case STATE_SENT_HELLO: {
@@ -384,7 +399,15 @@ void recv_handler_done (BSocksClient *o, int data_len)
         
         case STATE_RECEIVED_REPLY_HEADER: {
             BLog(BLOG_DEBUG, "received reply rest");
-            
+            {
+//               {
+//                    struct sockaddr_in peer_addr;
+//                    socklen_t peer_addr_len = sizeof peer_addr;
+//                    if (getpeername(o->con.fd, (struct sockaddr *)&peer_addr, &peer_addr_len) == 0) {
+//                        BLog(BLOG_ERROR, "connection from %s:%hu", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
+//                    }
+//                }
+            }
             // Record the address of the new socket bound by the server.
             // For a CONNECT command, this is the address of the TCP client socket to dest_addr.
             // Knowing this address is usually not important.
@@ -397,6 +420,21 @@ void recv_handler_done (BSocksClient *o, int data_len)
                     memcpy(&ip4, addr_buffer, sizeof(ip4));
                     o->bind_addr.ipv4.ip = ip4.addr;
                     o->bind_addr.ipv4.port = ip4.port;
+                    //log
+                    {
+                        char sender_dest[256];
+                        {
+                            int addr = ip4.addr;
+                            sprintf(sender_dest,"%"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8,
+                                                          *((uint8_t *)&addr + 0),
+                                                          *((uint8_t *)&addr + 1),
+                                                          *((uint8_t *)&addr + 2),
+                                                          *((uint8_t *)&addr + 3));
+                        }
+                        BLog(BLOG_ERROR, "BSocksClient:%p set bind_addr:%s:%d",o,sender_dest,ntohs(ip4.port));
+                    }
+
+                    
                 } break;
                 case BADDR_TYPE_IPV6: {
                     struct socks_addr_ipv6 ip6;
@@ -418,7 +456,7 @@ void recv_handler_done (BSocksClient *o, int data_len)
             // Initializing this is not needed for UDP ASSOCIATE but it doesn't hurt.
             // We anyway don't allow the user to use these interfaces in that case.
             init_up_io(o);
-            
+                
             // set state
             o->state = STATE_UP;
             
@@ -441,6 +479,11 @@ void send_handler_done (BSocksClient *o)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->buffer)
+#if TCP_DATA_LOG_ENABLE
+    struct in_addr a = {o->dest_addr.ipv4.ip};
+    char *ip = inet_ntoa(a);
+    BLog(BLOG_DEBUG, "socks client<%s:%d> send_handler_done state: %d", ip, o->dest_addr.ipv4.port, o->state);
+#endif
     
     switch (o->state) {
         case STATE_SENDING_HELLO: {
@@ -549,7 +592,9 @@ void auth_finished (BSocksClient *o)
             ASSERT(0);
     }
     memcpy(o->buffer, &header, sizeof(header));
-    
+#if SOCKS_DATA_LOG_ENABLE
+    BLog(BLOG_DEBUG, "tun2socks socks send request data<len: %d>", size.value);
+#endif
     // send request
     PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
     

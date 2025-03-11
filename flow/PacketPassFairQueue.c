@@ -29,12 +29,12 @@
 
 #include <stdlib.h>
 
-#include <misc/debug.h>
-#include <misc/offset.h>
-#include <misc/minmax.h>
-#include <misc/compare.h>
+#include "misc/debug.h"
+#include "misc/offset.h"
+#include "misc/minmax.h"
+#include "misc/compare.h"
 
-#include <flow/PacketPassFairQueue.h>
+#include "flow/PacketPassFairQueue.h"
 
 static int compare_flows (PacketPassFairQueueFlow *f1, PacketPassFairQueueFlow *f2)
 {
@@ -47,7 +47,7 @@ static int compare_flows (PacketPassFairQueueFlow *f1, PacketPassFairQueueFlow *
 }
 
 #include "PacketPassFairQueue_tree.h"
-#include <structure/SAvl_impl.h>
+#include "structure/SAvl_impl.h"
 
 static uint64_t get_current_time (PacketPassFairQueue *m)
 {

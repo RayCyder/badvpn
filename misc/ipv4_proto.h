@@ -37,10 +37,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <misc/debug.h>
-#include <misc/byteorder.h>
-#include <misc/packed.h>
-#include <misc/read_write_int.h>
+#include "misc/debug.h"
+#include "misc/byteorder.h"
+#include "misc/packed.h"
+#include "misc/read_write_int.h"
 
 #define IPV4_PROTOCOL_IGMP 2
 #define IPV4_PROTOCOL_UDP 17

@@ -45,7 +45,7 @@
 #include <stdint.h>
 #include <limits.h>
 
-#include <misc/packed.h>
+#include "misc/packed.h"
 
 /**
  * PacketProto packet header.

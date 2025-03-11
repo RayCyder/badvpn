@@ -36,23 +36,22 @@
 #include <unistd.h>
 #include <errno.h>
 #ifdef __APPLE__
-#include <netinet/in.h>
 #define	IPV6_PKTINFO	IPV6_2292PKTINFO
-
 #endif
 #include <sys/types.h>
 #include <sys/socket.h>
+#import <arpa/inet.h>
 #ifdef BADVPN_LINUX
 #    include <netpacket/packet.h>
 #    include <net/ethernet.h>
 #endif
 
-#include <misc/nonblocking.h>
-#include <base/BLog.h>
+#include "misc/nonblocking.h"
+#include "base/BLog.h"
 
 #include "BDatagram.h"
 
-#include <generated/blog_channel_BDatagram.h>
+#include "generated/blog_channel_BDatagram.h"
 
 struct sys_addr {
     socklen_t len;
@@ -289,18 +288,57 @@ static void do_send (BDatagram *o)
     struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
     
     size_t controllen = 0;
-    
+#ifdef __APPLE__
+    int bytes = -1;
+    switch (o->send.local_addr.type) {
+        case BADDR_TYPE_IPV4: {
+            bytes = sendto(o->fd, iov.iov_base, iov.iov_len, 0, msg.msg_name, msg.msg_namelen);
+            if (bytes < 0) {
+                 printf("ipv4 sendto failed: %s\n", strerror(errno));
+            }
+        } break;
+
+        case BADDR_TYPE_IPV6: {
+            memset(cmsg, 0, CMSG_SPACE(sizeof(struct in6_pktinfo)));
+            cmsg->cmsg_level = IPPROTO_IPV6;
+            cmsg->cmsg_type = IPV6_PKTINFO;
+            cmsg->cmsg_len = CMSG_LEN(sizeof(struct in6_pktinfo));
+            struct in6_pktinfo *pktinfo = (struct in6_pktinfo *)CMSG_DATA(cmsg);
+            memcpy(pktinfo->ipi6_addr.s6_addr, o->send.local_addr.ipv6, 16);
+            controllen += CMSG_SPACE(sizeof(struct in6_pktinfo));
+            msg.msg_controllen = controllen;
+            if (msg.msg_controllen == 0) {
+                msg.msg_control = NULL;
+            }
+            bytes = sendmsg(o->fd, &msg, 0);
+        } break;
+        default:
+        {
+            if (msg.msg_controllen == 0) {
+                msg.msg_control = NULL;
+            }
+            bytes = sendmsg(o->fd, &msg, 0);
+            {
+                struct sockaddr_in  _addr;
+                socklen_t len = sizeof(_addr);
+                getsockname(o->fd, &_addr, &len);
+                BLog(BLOG_ERROR,"[bdatagram]udp send to socket:%d which binded to :%s:%d->%s:%d",o->fd,inet_ntoa(_addr.sin_addr),ntohs(_addr.sin_port),
+                     inet_ntoa(sysaddr.addr.ipv4.sin_addr),ntohs(sysaddr.addr.ipv4.sin_port));
+            }
+            if (bytes < 0) {
+                BLog(BLOG_ERROR,"sendmsg failed: %s\n", strerror(errno));
+
+            }
+        }
+            break;
+    }
+#else
     switch (o->send.local_addr.type) {
         case BADDR_TYPE_IPV4: {
 #ifdef BADVPN_FREEBSD
             memset(cmsg, 0, CMSG_SPACE(sizeof(struct in_addr)));
             cmsg->cmsg_level = IPPROTO_IP;
-            //cmsg->cmsg_type = IP_SENDSRCADDR;
-            #ifdef __APPLE__
-    cmsg->cmsg_type = IP_RECVDSTADDR;  // macOS/iOS alternative
-#else
-    cmsg->cmsg_type = IP_SENDSRCADDR;  // Linux default
-#endif
+            cmsg->cmsg_type = IP_SENDSRCADDR;
             cmsg->cmsg_len = CMSG_LEN(sizeof(struct in_addr));
             struct in_addr *addrinfo = (struct in_addr *)CMSG_DATA(cmsg);
             addrinfo->s_addr = o->send.local_addr.ipv4;
@@ -336,6 +374,10 @@ static void do_send (BDatagram *o)
     // send
     int bytes = sendmsg(o->fd, &msg, 0);
     if (bytes < 0) {
+         printf("xxx sendmsg failed: %s\n", strerror(errno));
+    }
+#endif
+    if (bytes < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // wait for fd
             o->wait_events |= BREACTOR_WRITE;
@@ -343,6 +385,9 @@ static void do_send (BDatagram *o)
             return;
         }
         
+        BLog(BLOG_ERROR, "send failed");
+        BLog(BLOG_ERROR,"sendmsg failed: %s\n", strerror(errno));
+
         report_error(o);
         return;
     }
@@ -458,7 +503,15 @@ static void do_recv (BDatagram *o)
     
     // set not busy
     o->recv.busy = 0;
+    //addlog
     
+    {
+        struct sockaddr_in  _addr;
+        socklen_t len = sizeof(_addr);
+        getsockname(o->fd, &_addr, &len);
+        BLog(BLOG_ERROR,"[bdatagram]udp received from socket:%d which binded to :%s:%d->%s:%d",o->fd,inet_ntoa(_addr.sin_addr),ntohs(_addr.sin_port),
+             inet_ntoa(sysaddr.addr.ipv4.sin_addr),ntohs(sysaddr.addr.ipv4.sin_port));
+    }
     // done
     PacketRecvInterface_Done(&o->recv.iface, bytes);
 }
@@ -694,6 +747,13 @@ int BDatagram_Bind (BDatagram *o, BAddr addr)
         BLog(BLOG_ERROR, "bind failed");
         return 0;
     }
+    //print log
+    {
+        struct sockaddr_in _addr;
+        int _len = sizeof(_addr);
+        getsockname(o->fd, &_addr, &_len);
+        BLog(BLOG_ERROR, "udp socket:%d bind to local:%s:%d",o->fd ,inet_ntoa(_addr.sin_addr),ntohs(_addr.sin_port));
+    }
     
     // if recv wasn't started yet, start it
     if (!o->recv.started) {
@@ -728,6 +788,12 @@ void BDatagram_SetSendAddrs (BDatagram *o, BAddr remote_addr, BIPAddr local_addr
         if (o->send.inited && o->send.busy) {
             BPending_Set(&o->send.job);
         }
+    }
+    //log
+    {
+        char remote[255];
+        BAddr_Print(&remote_addr, remote);
+        BLog(BLOG_ERROR, "udp socket:%d set remote:%s",o->fd,remote);
     }
 }
 

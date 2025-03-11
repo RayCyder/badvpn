@@ -31,19 +31,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <base/BPending.h>
-#include <base/DebugObject.h>
-#include <flow/BufferWriter.h>
-#include <flow/PacketBuffer.h>
-#include <flow/SinglePacketBuffer.h>
-#include <flow/PacketPassInterface.h>
-#include <flowextra/PacketPassInactivityMonitor.h>
-#include <socksclient/BSocksClient.h>
-#include <structure/BAVL.h>
-#include <system/BAddr.h>
-#include <system/BDatagram.h>
-#include <system/BReactor.h>
-#include <system/BTime.h>
+#include "base/BPending.h"
+#include "base/DebugObject.h"
+#include "flow/BufferWriter.h"
+#include "flow/PacketBuffer.h"
+#include "flow/SinglePacketBuffer.h"
+#include "flow/PacketPassInterface.h"
+#include "flowextra/PacketPassInactivityMonitor.h"
+#include "socksclient/BSocksClient.h"
+#include "structure/BAVL.h"
+#include "system/BAddr.h"
+#include "system/BDatagram.h"
+#include "system/BReactor.h"
+#include "system/BTime.h"
 
 typedef void (*SocksUdpClient_handler_received) (
     void *user, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len);
