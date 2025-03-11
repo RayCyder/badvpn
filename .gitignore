@@ -1,0 +1,7 @@
+Pods
+.bundle
+vendor
+Gemfile.lock
+Podfile.lock
+.DS_Store
+
