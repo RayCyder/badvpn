@@ -32,7 +32,7 @@
 
 #include <stddef.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
 /**
  * Finds the first character 'c' in the string represented by 'str' and 'len'.

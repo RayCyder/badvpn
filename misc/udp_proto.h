@@ -36,11 +36,11 @@
 
 #include <stdint.h>
 
-#include <misc/debug.h>
-#include <misc/byteorder.h>
-#include <misc/ipv4_proto.h>
-#include <misc/ipv6_proto.h>
-#include <misc/read_write_int.h>
+#include "misc/debug.h"
+#include "misc/byteorder.h"
+#include "misc/ipv4_proto.h"
+#include "misc/ipv6_proto.h"
+#include "misc/read_write_int.h"
 
 B_START_PACKED
 struct udp_header {

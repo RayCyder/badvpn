@@ -29,9 +29,9 @@
 
 #include <stddef.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
-#include <flow/PacketPassConnector.h>
+#include "flow/PacketPassConnector.h"
 
 static void input_handler_send (PacketPassConnector *o, uint8_t *data, int data_len)
 {

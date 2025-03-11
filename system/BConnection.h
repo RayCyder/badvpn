@@ -30,12 +30,12 @@
 #ifndef BADVPN_SYSTEM_BCONNECTION
 #define BADVPN_SYSTEM_BCONNECTION
 
-#include <misc/debug.h>
-#include <flow/StreamPassInterface.h>
-#include <flow/StreamRecvInterface.h>
-#include <system/BAddr.h>
-#include <system/BReactor.h>
-#include <system/BNetwork.h>
+#include "misc/debug.h"
+#include "flow/StreamPassInterface.h"
+#include "flow/StreamRecvInterface.h"
+#include "system/BAddr.h"
+#include "system/BReactor.h"
+#include "system/BNetwork.h"
 
 
 
@@ -358,6 +358,19 @@ void BConnection_SetHandlers (BConnection *o, void *user, BConnection_handler ha
  * @return 1 on success, 0 on failure
  */
 int BConnection_SetSendBuffer (BConnection *o, int buf_size);
+
+/**
+ * Determines the local address.
+ * 
+ * This calls getsockname() to determine the local address and returns the result as
+ * BAddr. This function fails if the address cannot be determined or translated to
+ * BAddr (it never succeeds but returns a BADDR_TYPE_NONE address).
+ *
+ * @param o the object
+ * @param local_addr returns the local bound address.
+ * @return 1 on success, 0 on failure
+ */
+int BConnection_GetLocalAddress (BConnection *o, BAddr *local_addr);
 
 /**
  * Initializes the send interface for the connection.

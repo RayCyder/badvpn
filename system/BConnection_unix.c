@@ -35,13 +35,13 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include <misc/nonblocking.h>
-#include <misc/strdup.h>
-#include <base/BLog.h>
+#include "misc/nonblocking.h"
+#include "misc/strdup.h"
+#include "base/BLog.h"
 
 #include "BConnection.h"
 
-#include <generated/blog_channel_BConnection.h>
+#include "generated/blog_channel_BConnection.h"
 
 #define MAX_UNIX_SOCKET_PATH 200
 
@@ -265,6 +265,7 @@ static void connection_send (BConnection *o)
         connection_report_error(o);
         return;
     }
+    BLog(BLOG_INFO, "clien try write: %d, written: %d", o->send.busy_data_len, bytes);
     
     ASSERT(bytes > 0)
     ASSERT(bytes <= o->send.busy_data_len)
@@ -290,7 +291,8 @@ static void connection_recv (BConnection *o)
             return;
         }
     }
-    
+    BLog(BLOG_INFO, "clien try read: %d", o->recv.busy_data_avail);
+
     // recv
     int bytes = read(o->fd, o->recv.busy_data, o->recv.busy_data_avail);
     if (bytes < 0) {
@@ -305,6 +307,7 @@ static void connection_recv (BConnection *o)
         connection_report_error(o);
         return;
     }
+    BLog(BLOG_INFO, "clien try read: %d, received: %d", o->recv.busy_data_avail, bytes);
     
     if (bytes == 0) {
         // set recv inited closed
@@ -873,6 +876,30 @@ int BConnection_SetSendBuffer (BConnection *o, int buf_size)
         return 0;
     }
     
+    return 1;
+}
+
+int BConnection_GetLocalAddress (BConnection *o, BAddr *local_addr)
+{
+    DebugObject_Access(&o->d_obj);
+    
+    struct sys_addr sysaddr;
+    sysaddr.len = sizeof(sysaddr.addr);
+    if (getsockname(o->fd, &sysaddr.addr.generic, &sysaddr.len) != 0) {
+        BLog(BLOG_ERROR, "BConnection_GetLocalAddress: getsockname failed");
+        return 0;
+    }
+
+    BAddr addr;
+    addr_sys_to_socket(&addr, sysaddr);
+
+    if (addr.type == BADDR_TYPE_NONE) {
+        BLog(BLOG_ERROR, "BConnection_GetLocalAddress: Unsupported address family "
+            "from getsockname: %d", (int)sysaddr.addr.generic.sa_family);
+        return 0;
+    }
+
+    *local_addr = addr;
     return 1;
 }
 

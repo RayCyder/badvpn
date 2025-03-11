@@ -37,10 +37,10 @@
 
 #include <stdint.h>
 
-#include <misc/debug.h>
-#include <base/DebugObject.h>
-#include <flow/PacketRecvInterface.h>
-#include <flow/PacketPassInterface.h>
+#include "misc/debug.h"
+#include "base/DebugObject.h"
+#include "flow/PacketRecvInterface.h"
+#include "flow/PacketPassInterface.h"
 
 /**
  * Packet buffer with {@link PacketRecvInterface} input and {@link PacketPassInterface} output

@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <syslog.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
 #include "BLog_syslog.h"
 

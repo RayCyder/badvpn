@@ -41,15 +41,15 @@
 #include <unistd.h>
 #endif
 
-#include <misc/debug.h>
-#include <misc/offset.h>
-#include <misc/balloc.h>
-#include <misc/compare.h>
-#include <base/BLog.h>
+#include "misc/debug.h"
+#include "misc/offset.h"
+#include "misc/balloc.h"
+#include "misc/compare.h"
+#include "base/BLog.h"
 
-#include <system/BReactor.h>
+#include "system/BReactor.h"
 
-#include <generated/blog_channel_BReactor.h>
+#include "generated/blog_channel_BReactor.h"
 
 #define KEVENT_TAG_FD 1
 #define KEVENT_TAG_KEVENT 2
@@ -69,7 +69,7 @@ static int compare_timers (BSmallTimer *t1, BSmallTimer *t2)
 }
 
 #include "BReactor_badvpn_timerstree.h"
-#include <structure/CAvl_impl.h>
+#include "structure/CAvl_impl.h"
 
 static void assert_timer (BSmallTimer *bt)
 {
@@ -320,7 +320,7 @@ static void wait_for_events (BReactor *bsys)
         
         // if some timers have already timed out, return them immediately
         if (move_expired_timers(bsys, now)) {
-            BLog(BLOG_DEBUG, "Got already expired timers");
+            BLog(BLOG_DEBUG, "Got already expired timers");//too many times
             return;
         }
         
@@ -423,7 +423,7 @@ static void wait_for_events (BReactor *bsys)
             ts.tv_nsec = (timeout_rel_trunc % 1000) * 1000000;
         }
         
-        BLog(BLOG_DEBUG, "Calling kevent");
+//        BLog(BLOG_DEBUG, "Calling kevent");
         
         int waitres = kevent(bsys->kqueue_fd, NULL, 0, bsys->kevent_results, BSYSTEM_MAX_RESULTS, (have_timeout ? &ts : NULL));
         if (waitres < 0) {
@@ -441,11 +441,11 @@ static void wait_for_events (BReactor *bsys)
         
         if (waitres != 0 || timeout_rel_trunc == timeout_rel) {
             if (waitres != 0) {
-                BLog(BLOG_DEBUG, "kevent returned %d events", waitres);
+//                BLog(BLOG_DEBUG, "kevent returned %d events", waitres);
                 bsys->kevent_results_num = waitres;
                 set_kevent_fd_pointers(bsys);
             } else {
-                BLog(BLOG_DEBUG, "kevent timed out");
+//                BLog(BLOG_DEBUG, "kevent timed out");
                 move_first_timers(bsys);
             }
             break;
@@ -787,7 +787,7 @@ int BReactor_Exec (BReactor *bsys)
             timer->state = TIMER_STATE_INACTIVE;
             
             // call handler
-            BLog(BLOG_DEBUG, "Dispatching timer");
+//            BLog(BLOG_DEBUG, "Dispatching timer");
             if (timer->is_small) {
                 timer->handler.smalll(timer);
             } else {
@@ -908,7 +908,7 @@ int BReactor_Exec (BReactor *bsys)
                     }
                     
                     // call handler
-                    BLog(BLOG_DEBUG, "Dispatching file descriptor");
+//                    BLog(BLOG_DEBUG, "Dispatching file descriptor");
                     bfd->handler(bfd->user, events);
                     continue;
                 } break;
@@ -923,7 +923,7 @@ int BReactor_Exec (BReactor *bsys)
                     kev->kevent_returned_ptr = NULL;
                     
                     // call handler
-                    BLog(BLOG_DEBUG, "Dispatching kevent");
+//                    BLog(BLOG_DEBUG, "Dispatching kevent");
                     kev->handler(kev->user, event->fflags, event->data);
                     continue;
                 } break;

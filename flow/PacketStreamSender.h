@@ -37,9 +37,9 @@
 
 #include <stdint.h>
 
-#include <base/DebugObject.h>
-#include <flow/PacketPassInterface.h>
-#include <flow/StreamPassInterface.h>
+#include "base/DebugObject.h"
+#include "flow/PacketPassInterface.h"
+#include "flow/StreamPassInterface.h"
 
 /**
  * Object which forwards packets obtained with {@link PacketPassInterface}

@@ -29,9 +29,9 @@
 
 #include <stdlib.h>
 
-#include <misc/debug.h>
+#include "misc/debug.h"
 
-#include <flow/PacketStreamSender.h>
+#include "flow/PacketStreamSender.h"
 
 static void send_data (PacketStreamSender *s)
 {

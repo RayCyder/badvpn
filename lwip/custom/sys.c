@@ -27,9 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <system/BTime.h>
+#include "system/BTime.h"
 
-#include <lwip/sys.h>
+#include "lwip/sys.h"
 
 u32_t sys_now (void)
 {

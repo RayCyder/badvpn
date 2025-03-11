@@ -1,9 +1,9 @@
 /**
  * @file BSocksClient.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,23 +29,29 @@
 
 #include <string.h>
 
-#include <misc/byteorder.h>
-#include <misc/balloc.h>
-#include <base/BLog.h>
+#include "misc/byteorder.h"
+#include "misc/balloc.h"
+#include "base/BLog.h"
 
-#include <socksclient/BSocksClient.h>
+#include "socksclient/BSocksClient.h"
 
-#include <generated/blog_channel_BSocksClient.h>
+#include "generated/blog_channel_BSocksClient.h"
+
+
+#ifdef __APPLE__
+#import <arpa/inet.h>
+#endif
 
 #define STATE_CONNECTING 1
-#define STATE_SENDING_HELLO 2
-#define STATE_SENT_HELLO 3
-#define STATE_SENDING_PASSWORD 10
-#define STATE_SENT_PASSWORD 11
-#define STATE_SENDING_REQUEST 4
-#define STATE_SENT_REQUEST 5
-#define STATE_RECEIVED_REPLY_HEADER 6
-#define STATE_UP 7
+#define STATE_CONNECTED_HANDLER 2
+#define STATE_SENDING_HELLO 3
+#define STATE_SENT_HELLO 4
+#define STATE_SENDING_PASSWORD 5
+#define STATE_SENT_PASSWORD 6
+#define STATE_SENDING_REQUEST 7
+#define STATE_SENT_REQUEST 8
+#define STATE_RECEIVED_REPLY_HEADER 9
+#define STATE_UP 10
 
 static void report_error (BSocksClient *o, int error);
 static void init_control_io (BSocksClient *o);
@@ -57,9 +63,12 @@ static void start_receive (BSocksClient *o, uint8_t *dest, int total);
 static void do_receive (BSocksClient *o);
 static void connector_handler (BSocksClient* o, int is_error);
 static void connection_handler (BSocksClient* o, int event);
+static void continue_job_handler (BSocksClient *o);
 static void recv_handler_done (BSocksClient *o, int data_len);
 static void send_handler_done (BSocksClient *o);
 static void auth_finished (BSocksClient *p);
+
+# define TCP_DATA_LOG_ENABLE 1
 
 void report_error (BSocksClient *o, int error)
 {
@@ -166,48 +175,15 @@ void connector_handler (BSocksClient* o, int is_error)
     // init control I/O
     init_control_io(o);
     
-    // check number of methods
-    if (o->num_auth_info == 0 || o->num_auth_info > 255) {
-        BLog(BLOG_ERROR, "invalid number of authentication methods");
-        goto fail1;
-    }
-    
-    // allocate buffer for sending hello
-    bsize_t size = bsize_add(
-        bsize_fromsize(sizeof(struct socks_client_hello_header)), 
-        bsize_mul(
-            bsize_fromsize(o->num_auth_info),
-            bsize_fromsize(sizeof(struct socks_client_hello_method))
-        )
-    );
-    if (!reserve_buffer(o, size)) {
-        goto fail1;
-    }
-    
-    // write hello header
-    struct socks_client_hello_header header;
-    header.ver = hton8(SOCKS_VERSION);
-    header.nmethods = hton8(o->num_auth_info);
-    memcpy(o->buffer, &header, sizeof(header));
-    
-    // write hello methods
-    for (size_t i = 0; i < o->num_auth_info; i++) {
-        struct socks_client_hello_method method;
-        method.method = hton8(o->auth_info[i].auth_type);
-        memcpy(o->buffer + sizeof(header) + i * sizeof(method), &method, sizeof(method));
-    }
-    
-    // send
-    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
-    
-    // set state
-    o->state = STATE_SENDING_HELLO;
-    
+    // go to STATE_CONNECTED_HANDLER and set the continue job in order to continue
+    // in continue_job_handler
+    o->state = STATE_CONNECTED_HANDLER;
+    BPending_Set(&o->continue_job);
+
+    // call the handler with the connected event
+    o->handler(o->user, BSOCKSCLIENT_EVENT_CONNECTED);
     return;
     
-fail1:
-    free_control_io(o);
-    BConnection_Free(&o->con);
 fail0:
     report_error(o, BSOCKSCLIENT_EVENT_ERROR);
     return;
@@ -227,6 +203,57 @@ void connection_handler (BSocksClient* o, int event)
     return;
 }
 
+void continue_job_handler (BSocksClient *o)
+{
+    DebugObject_Access(&o->d_obj);
+    ASSERT(o->state == STATE_CONNECTED_HANDLER)
+
+    // check number of methods
+    if (o->num_auth_info == 0 || o->num_auth_info > 255) {
+        BLog(BLOG_ERROR, "invalid number of authentication methods");
+        goto fail0;
+    }
+
+    // allocate buffer for sending hello
+    bsize_t size = bsize_add(
+        bsize_fromsize(sizeof(struct socks_client_hello_header)),
+        bsize_mul(
+            bsize_fromsize(o->num_auth_info),
+            bsize_fromsize(sizeof(struct socks_client_hello_method))
+        )
+    );
+    if (!reserve_buffer(o, size)) {
+        goto fail0;
+    }
+    
+    // write hello header
+    struct socks_client_hello_header header;
+    header.ver = hton8(SOCKS_VERSION);
+    header.nmethods = hton8(o->num_auth_info);
+    memcpy(o->buffer, &header, sizeof(header));
+    
+    // write hello methods
+    for (size_t i = 0; i < o->num_auth_info; i++) {
+        struct socks_client_hello_method method;
+        method.method = hton8(o->auth_info[i].auth_type);
+        memcpy(o->buffer + sizeof(header) + i * sizeof(method), &method, sizeof(method));
+    }
+#if SOCKS_DATA_LOG_ENABLE
+    BLog(BLOG_DEBUG, "tun2socks socks send hello data<len: %d>", size.value);
+#endif
+    // send
+    PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
+    
+    // set state
+    o->state = STATE_SENDING_HELLO;
+
+    return;
+
+fail0:
+    report_error(o, BSOCKSCLIENT_EVENT_ERROR);
+    return;
+}
+
 void recv_handler_done (BSocksClient *o, int data_len)
 {
     ASSERT(data_len >= 0)
@@ -239,6 +266,12 @@ void recv_handler_done (BSocksClient *o, int data_len)
         do_receive(o);
         return;
     }
+#if TCP_DATA_LOG_ENABLE
+    struct in_addr a = {o->dest_addr.ipv4.ip};
+    char *ip = inet_ntoa(a);
+    BLog(BLOG_INFO, "socks client<%s:%d> recv_handler_done state: %d, data <len: %d>", ip, o->dest_addr.ipv4.port, o->state, data_len);
+
+#endif
     
     switch (o->state) {
         case STATE_SENT_HELLO: {
@@ -329,9 +362,11 @@ void recv_handler_done (BSocksClient *o, int data_len)
             int addr_len;
             switch (ntoh8(imsg.atyp)) {
                 case SOCKS_ATYP_IPV4:
+                    o->bind_addr.type = BADDR_TYPE_IPV4;
                     addr_len = sizeof(struct socks_addr_ipv4);
                     break;
                 case SOCKS_ATYP_IPV6:
+                    o->bind_addr.type = BADDR_TYPE_IPV6;
                     addr_len = sizeof(struct socks_addr_ipv6);
                     break;
                 default:
@@ -364,6 +399,51 @@ void recv_handler_done (BSocksClient *o, int data_len)
         
         case STATE_RECEIVED_REPLY_HEADER: {
             BLog(BLOG_DEBUG, "received reply rest");
+            {
+//               {
+//                    struct sockaddr_in peer_addr;
+//                    socklen_t peer_addr_len = sizeof peer_addr;
+//                    if (getpeername(o->con.fd, (struct sockaddr *)&peer_addr, &peer_addr_len) == 0) {
+//                        BLog(BLOG_ERROR, "connection from %s:%hu", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
+//                    }
+//                }
+            }
+            // Record the address of the new socket bound by the server.
+            // For a CONNECT command, this is the address of the TCP client socket to dest_addr.
+            // Knowing this address is usually not important.
+            // For a UDP_ASSOCIATE command, this is the UDP address to which to send SOCKS UDP.
+            // Recording this address is a prerequisite to send traffic on a SOCKS-UDP association.
+            void *addr_buffer = o->buffer + sizeof(struct socks_reply_header);
+            switch (o->bind_addr.type) {
+                case BADDR_TYPE_IPV4: {
+                    struct socks_addr_ipv4 ip4;
+                    memcpy(&ip4, addr_buffer, sizeof(ip4));
+                    o->bind_addr.ipv4.ip = ip4.addr;
+                    o->bind_addr.ipv4.port = ip4.port;
+                    //log
+                    {
+                        char sender_dest[256];
+                        {
+                            int addr = ip4.addr;
+                            sprintf(sender_dest,"%"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8,
+                                                          *((uint8_t *)&addr + 0),
+                                                          *((uint8_t *)&addr + 1),
+                                                          *((uint8_t *)&addr + 2),
+                                                          *((uint8_t *)&addr + 3));
+                        }
+                        BLog(BLOG_ERROR, "BSocksClient:%p set bind_addr:%s:%d",o,sender_dest,ntohs(ip4.port));
+                    }
+
+                    
+                } break;
+                case BADDR_TYPE_IPV6: {
+                    struct socks_addr_ipv6 ip6;
+                    memcpy(&ip6, addr_buffer, sizeof(ip6));
+                    memcpy(o->bind_addr.ipv6.ip, ip6.addr, sizeof(ip6.addr));
+                    o->bind_addr.ipv6.port = ip6.port;
+                } break;
+                default: ASSERT(0);
+            }
             
             // free buffer
             BFree(o->buffer);
@@ -373,8 +453,10 @@ void recv_handler_done (BSocksClient *o, int data_len)
             free_control_io(o);
             
             // init up I/O
+            // Initializing this is not needed for UDP ASSOCIATE but it doesn't hurt.
+            // We anyway don't allow the user to use these interfaces in that case.
             init_up_io(o);
-            
+                
             // set state
             o->state = STATE_UP;
             
@@ -397,6 +479,11 @@ void send_handler_done (BSocksClient *o)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->buffer)
+#if TCP_DATA_LOG_ENABLE
+    struct in_addr a = {o->dest_addr.ipv4.ip};
+    char *ip = inet_ntoa(a);
+    BLog(BLOG_DEBUG, "socks client<%s:%d> send_handler_done state: %d", ip, o->dest_addr.ipv4.port, o->state);
+#endif
     
     switch (o->state) {
         case STATE_SENDING_HELLO: {
@@ -465,8 +552,16 @@ void auth_finished (BSocksClient *o)
     // allocate request buffer
     bsize_t size = bsize_fromsize(sizeof(struct socks_request_header));
     switch (o->dest_addr.type) {
-        case BADDR_TYPE_IPV4: size = bsize_add(size, bsize_fromsize(sizeof(struct socks_addr_ipv4))); break;
-        case BADDR_TYPE_IPV6: size = bsize_add(size, bsize_fromsize(sizeof(struct socks_addr_ipv6))); break;
+        case BADDR_TYPE_IPV4:
+            size = bsize_add(size, bsize_fromsize(sizeof(struct socks_addr_ipv4)));
+            break;
+        case BADDR_TYPE_IPV6:
+            size = bsize_add(size, bsize_fromsize(sizeof(struct socks_addr_ipv6)));
+            break;
+        default:
+            BLog(BLOG_ERROR, "Invalid dest_addr address type.");
+            report_error(o, BSOCKSCLIENT_EVENT_ERROR);
+            return;
     }
     if (!reserve_buffer(o, size)) {
         report_error(o, BSOCKSCLIENT_EVENT_ERROR);
@@ -476,7 +571,7 @@ void auth_finished (BSocksClient *o)
     // write request
     struct socks_request_header header;
     header.ver = hton8(SOCKS_VERSION);
-    header.cmd = hton8(SOCKS_CMD_CONNECT);
+    header.cmd = hton8(o->udp ? SOCKS_CMD_UDP_ASSOCIATE : SOCKS_CMD_CONNECT);
     header.rsv = hton8(0);
     switch (o->dest_addr.type) {
         case BADDR_TYPE_IPV4: {
@@ -497,7 +592,9 @@ void auth_finished (BSocksClient *o)
             ASSERT(0);
     }
     memcpy(o->buffer, &header, sizeof(header));
-    
+#if SOCKS_DATA_LOG_ENABLE
+    BLog(BLOG_DEBUG, "tun2socks socks send request data<len: %d>", size.value);
+#endif
     // send request
     PacketPassInterface_Sender_Send(o->control.send_if, (uint8_t *)o->buffer, size.value);
     
@@ -523,12 +620,11 @@ struct BSocksClient_auth_info BSocksClient_auth_password (const char *username, 
     return info;
 }
 
-int BSocksClient_Init (BSocksClient *o,
-                       BAddr server_addr, const struct BSocksClient_auth_info *auth_info, size_t num_auth_info,
-                       BAddr dest_addr, BSocksClient_handler handler, void *user, BReactor *reactor)
+int BSocksClient_Init (BSocksClient *o, BAddr server_addr,
+    const struct BSocksClient_auth_info *auth_info, size_t num_auth_info, BAddr dest_addr,
+    bool udp, BSocksClient_handler handler, void *user, BReactor *reactor)
 {
     ASSERT(!BAddr_IsInvalid(&server_addr))
-    ASSERT(dest_addr.type == BADDR_TYPE_IPV4 || dest_addr.type == BADDR_TYPE_IPV6)
 #ifndef NDEBUG
     for (size_t i = 0; i < num_auth_info; i++) {
         ASSERT(auth_info[i].auth_type == SOCKS_METHOD_NO_AUTHENTICATION_REQUIRED ||
@@ -540,12 +636,17 @@ int BSocksClient_Init (BSocksClient *o,
     o->auth_info = auth_info;
     o->num_auth_info = num_auth_info;
     o->dest_addr = dest_addr;
+    o->udp = udp;
     o->handler = handler;
     o->user = user;
     o->reactor = reactor;
     
     // set no buffer
     o->buffer = NULL;
+
+    // init continue_job
+    BPending_Init(&o->continue_job, BReactor_PendingGroup(o->reactor),
+        (BPending_handler)continue_job_handler, o);
     
     // init connector
     if (!BConnector_Init(&o->connector, server_addr, o->reactor, o, (BConnector_handler)connector_handler)) {
@@ -561,6 +662,7 @@ int BSocksClient_Init (BSocksClient *o,
     return 1;
     
 fail0:
+    BPending_Free(&o->continue_job);
     return 0;
 }
 
@@ -585,15 +687,43 @@ void BSocksClient_Free (BSocksClient *o)
     // free connector
     BConnector_Free(&o->connector);
     
+    // free continue job
+    BPending_Free(&o->continue_job);
+
     // free buffer
     if (o->buffer) {
         BFree(o->buffer);
     }
 }
 
+int BSocksClient_GetLocalAddr (BSocksClient *o, BAddr *local_addr)
+{
+    ASSERT(o->state != STATE_CONNECTING)
+    DebugObject_Access(&o->d_obj);
+
+    return BConnection_GetLocalAddress(&o->con, local_addr);
+}
+
+void BSocksClient_SetDestAddr (BSocksClient *o, BAddr dest_addr)
+{
+    ASSERT(o->state == STATE_CONNECTING || o->state == STATE_CONNECTED_HANDLER)
+    DebugObject_Access(&o->d_obj);
+
+    o->dest_addr = dest_addr;
+}
+
+BAddr BSocksClient_GetBindAddr (BSocksClient *o)
+{
+    ASSERT(o->state == STATE_UP)
+    DebugObject_Access(&o->d_obj);
+
+    return o->bind_addr;
+}
+
 StreamPassInterface * BSocksClient_GetSendInterface (BSocksClient *o)
 {
     ASSERT(o->state == STATE_UP)
+    ASSERT(!o->udp)
     DebugObject_Access(&o->d_obj);
     
     return BConnection_SendAsync_GetIf(&o->con);
@@ -602,6 +732,7 @@ StreamPassInterface * BSocksClient_GetSendInterface (BSocksClient *o)
 StreamRecvInterface * BSocksClient_GetRecvInterface (BSocksClient *o)
 {
     ASSERT(o->state == STATE_UP)
+    ASSERT(!o->udp)
     DebugObject_Access(&o->d_obj);
     
     return BConnection_RecvAsync_GetIf(&o->con);
